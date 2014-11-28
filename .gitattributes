@@ -1,1 +1,11 @@
 * text=auto !eol
+PriorityQWorkshop/.classpath -text svneol=unset#text/plain
+PriorityQWorkshop/.project -text svneol=unset#text/plain
+PriorityQWorkshop/.settings/org.eclipse.jdt.core.prefs -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/FreestyleSprayListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/GrainedLockSprayListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/IPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/NaiveLockNativePriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/NaiveLockSprayListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/SprayListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/TransactioalMemorySprayListPriorityQueue.java -text svneol=unset#text/plain
