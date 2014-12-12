@@ -65,4 +65,27 @@ public class NaiveLockSprayListPriorityQueue extends SprayListPriorityQueue {
 		return _random.nextInt(max+1);
 	}
 
+	@Override
+	protected boolean canInsertBetween(SprayListNode pred, SprayListNode succ,
+			int level) {
+		return true;
+	}
+
+	@Override
+	protected void lockNode(SprayListNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void unlockNode(SprayListNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected boolean readyToBeDeleted(SprayListNode victim) {
+		return true;
+	}
+
 }

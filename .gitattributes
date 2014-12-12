@@ -10,3 +10,4 @@ PriorityQWorkshop/src/priorityQueue/NaiveLockSprayListPriorityQueue.java -text s
 PriorityQWorkshop/src/priorityQueue/SprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/TransactioalMemorySprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/tests/maintest.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/utils/LockFreeRandom.java -text svneol=unset#text/plain

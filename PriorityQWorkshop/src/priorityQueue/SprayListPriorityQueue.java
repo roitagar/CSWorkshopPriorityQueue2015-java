@@ -1,22 +1,24 @@
 package priorityQueue;
 
 import java.util.concurrent.atomic.AtomicMarkableReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class SprayListPriorityQueue implements IPriorityQueue {
 
 	SprayListNode _head;
 	SprayListNode _tail;
 	int _maxAllowedHeight;
-	boolean isFullyLinked;
-	boolean isMarked;
 	
 	protected class SprayListNode{
 		int value;
+		private boolean _fullyLinked;
 		AtomicMarkableReference<SprayListNode>[] next;
+		final ReentrantLock lock = new ReentrantLock();
 		
 		public SprayListNode(int value, int height)
 		{
 			this.value = value;
+			_fullyLinked = false;
 			next = (AtomicMarkableReference<SprayListNode>[]) new AtomicMarkableReference[height+1]; // TODO: Verify +/-1
 		}
 		
@@ -41,6 +43,14 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		{
 			return next[0].isMarked();
 		}
+
+		public boolean isFullyLinked() {
+			return _fullyLinked;
+		}
+
+		public void setFullyLinked() {
+			_fullyLinked = true;
+		}
 	}
 	
 	public SprayListPriorityQueue(int maxAllowedHeight)
@@ -54,9 +64,36 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 					new AtomicMarkableReference<SprayListNode>(
 							_tail,
 							false);
+			_tail.next[i] = 
+					new AtomicMarkableReference<SprayListNode>(
+							null,
+							false);
 		}
 	}
 	
+	protected abstract boolean canInsertBetween(SprayListNode pred, SprayListNode succ, int level);
+
+	// Locks a node for edit, if required
+	protected abstract void lockNode(SprayListNode node);
+	
+	// Unlocks a locked node, if required
+	protected abstract void unlockNode(SprayListNode node);
+	
+	protected abstract void startInsert();
+	protected abstract void endInsert();
+	protected abstract int randomLevel();
+	
+	protected abstract void startDeleteMin();
+
+	protected abstract void endDeleteMin();
+
+	// Number of threads currently calling deleteMin
+	protected abstract int getNumberOfThreads();
+
+	protected abstract int randomStep(int max);
+
+	protected abstract boolean readyToBeDeleted(SprayListNode victim);
+
 	@Override
 	public void insert(int value) {
 		// TODO Auto-generated method stub
@@ -66,20 +103,26 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		SprayListNode[] preds = new SprayListNode[_maxAllowedHeight+1];
 		SprayListNode[] succs = new SprayListNode[_maxAllowedHeight+1];
 		boolean success = false;
-		
+
 		while(!success)
 		{
 			int lFound = find(value, preds, succs);
-			// The next commented code handles duplicates in a thread-safe way
-//			if(lFound != -1){
-//				// value was found in level lFound
-//				SprayListNode nodeFound = succs[lFound];
-//				if(!nodeFound.marked){
-//					while(!nodeFound.fullyLinked){}
-//					return false;
-//				}
-//				continue;
-//			}
+
+			//if (lfound!=-1) it means that the item is already exist
+			//then return; TODO: decide whether to change to boolean/execption
+
+			if(lFound != -1)
+			{
+				SprayListNode nodeFound = succs[lFound];
+				//if the item is marked due to deletion
+				if(!nodeFound.isMarked())
+				{
+					//wait for prev insertion to finish?
+					//						while(!nodeFound.isFullyLinked()){}
+					return;// false;
+				}
+				continue;
+			}
 			int highestLocked = -1;
 			try
 			{
@@ -90,12 +133,15 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 				{
 					pred = preds[level];
 					succ = succs[level];
-//					pred.lock.lock();
+					lockNode(pred); // note: not necessarily locks anything, implementation dependant
 					highestLocked = level;
 					// valid == false means a different item was inserted after the same pred, or pred/succ were removed
-					valid = /*!pred.marked && !succ.marked && */ pred.next[level].getReference()==succ;
+					valid = canInsertBetween(pred, succ, level);
 				}
-				
+
+				// TODO: convert the lock & unlock loops to a method of this kind:
+				// valid = aquireAllLevels(preds, succs, level, out highestLocked);
+
 				if(!valid) continue;
 				// At this point, all preds in all levels are exclusively locked for this insertion
 				SprayListNode newNode = new SprayListNode(value, topLevel);
@@ -103,30 +149,27 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 				{
 					newNode.next[level] = new AtomicMarkableReference<SprayListNode>(succs[level],false);
 				}
+
 				for(int level=0; level<=topLevel; level++)
 				{
-					preds[level].next[level] = new AtomicMarkableReference<SprayListNode>(newNode,false);
+					preds[level].next[level].set(newNode,false); // TODO: encapsulate this, as it is illegal for a lockless implementation
 				}
-//				newNode.fullyLinked = true; // Successful add linearization point
+
+				newNode.setFullyLinked(); // Successful add linearization point
 				success = true;
 			}
 			finally
 			{
-//				for(int level = 0; level<=highestLocked; level++)
-//				{
-//					preds[level].unlock();
-//				}
+				for(int level = 0; level<=highestLocked; level++)
+				{
+					unlockNode(preds[level]);
+				}
 			}
 		}
-		
-		
+
 		endInsert();
 	}
-	
-	protected abstract void startInsert();
-	protected abstract void endInsert();
-	protected abstract int randomLevel();
-	
+
 	protected int find(int value, SprayListNode[] preds, SprayListNode[] succs)
 	{
 		int lFound = -1;
@@ -152,22 +195,20 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 	@Override
 	public int deleteMin() {
 		startDeleteMin();
-		int p = getNumberOfThreads();
-		int H = (int) Math.log(p)/*+K*/;
-		int L = (int) (/*M * */ Math.pow(Math.log(p),3));
-		int D = 1; /* Math.max(1, log(log(p))) */
-		int result = spray(H,L,D);
-		remove(result); // TODO: Need to test if remove was successful? otherwise maybe some other thread returned and removed our value
+		boolean retry = false;
+		int result;
+		do
+		{
+			int p = getNumberOfThreads();
+			int H = (int) Math.log(p)/*+K*/;
+			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
+			int D = 1; /* Math.max(1, log(log(p))) */
+			result = spray(H,L,D);
+			retry = !remove(result);
+		} while(retry);
 		endDeleteMin();
 		return result;
 	}
-	
-	protected abstract void startDeleteMin();
-	protected abstract void endDeleteMin();
-	// Number of threads currently calling deleteMin
-	protected abstract int getNumberOfThreads();
-	
-	protected abstract int randomStep(int max);
 	
 	// Finds a candidate for deleteMin
 	private int spray(int H, int L, int D)
@@ -186,8 +227,8 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		
 		return x.value;
 	}
-	
-	private void remove(int value)
+
+	private boolean remove(int value)
 	{
 		SprayListNode victim = null;
 		boolean isMarked = false;
@@ -202,18 +243,21 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 			{
 				victim = succs[lFound];
 			}
-			if (isMarked ||  (lFound != -1 &&   (/*victim.isFullyLinked  &&*/ victim.topLevel() == lFound/*  && !victim.isMarked()*/)))
+			
+			// testing topLevel==lFound is not necessarily required, due to the otehr two checks
+			if (isMarked ||  (lFound != -1 && readyToBeDeleted(victim)))// (victim.isFullyLinked()  && victim.topLevel() == lFound  && !victim.isMarked())))
 			{
 				if(!isMarked)
 				{
 					topLevel = victim.topLevel();
-					//victim.lock.lock();
-//					if(victim.isMarked())
-//					{
-//						//victim.lock.unlock();
-//						return;// false;
-//					}
-//				victim.marked = true;
+					lockNode(victim);
+					if(victim.isMarked())
+					{
+						// Item was marked by another thread, and is being removed.
+						unlockNode(victim);
+						return false;
+					}
+				victim.tryMark();
 				isMarked = true;
 				}
 
@@ -225,29 +269,33 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 					for (int level = 0; valid && (level <= topLevel); level++)
 					{
 						pred = preds[level];
-	//			        pred.lock.lock();
+				        lockNode(pred);
 						highestLocked = level;
-						valid = true;//!pred.marked && pred.next[level]==victim;
+						valid = !pred.isMarked() && pred.next[level].getReference()==victim;
 					}
-//					if (!valid) continue;
+					
+					// valid == false if pred is pending deletion, or a new item was inserted after it
+					if (!valid) continue;
+					
 					for (int level = topLevel; level >= 0; level--)
 					{
-						preds[level].next[level] = victim.next[level];	// TODO: only copy reference, don't mess with the mark
+						preds[level].next[level].set(victim.next[level].getReference(), false); // TODO: encapsulate this, as it is illegal for a lockless implementation
 					}
-//					victim.lock.unlock();
-					return;// true;
+					unlockNode(victim);
+					return true;
 				}
 				finally
 				{
 					for (int i = 0; i <= highestLocked; i++)
 					{
-//						preds[i].unlock();
+						unlockNode(preds[i]);
 					}
 				}
 			}
 			else
 			{
-//				return false;
+				// Item was either not found, or not ready for deletion (in the middle of insert/remove)
+				return false;
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package priorityQueue.tests;
 
+import priorityQueue.GrainedLockSprayListPriorityQueue;
 import priorityQueue.IPriorityQueue;
 import priorityQueue.NaiveLockNativePriorityQueue;
 import priorityQueue.NaiveLockSprayListPriorityQueue;
@@ -10,7 +11,8 @@ public class maintest {
 		// TODO Auto-generated method stub
 		IPriorityQueue pq;
 		int res;
-		pq = new NaiveLockSprayListPriorityQueue(5);
+		pq = new GrainedLockSprayListPriorityQueue(5);
+//		pq = new NaiveLockSprayListPriorityQueue(5);
 //		pq = new NaiveLockNativePriorityQueue();
 		
 		pq.insert(25);

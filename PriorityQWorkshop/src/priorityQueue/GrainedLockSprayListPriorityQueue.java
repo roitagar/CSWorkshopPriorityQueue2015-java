@@ -1,52 +1,78 @@
 package priorityQueue;
 
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class GrainedLockSprayListPriorityQueue extends SprayListPriorityQueue {
 
+	AtomicInteger _threads;
+	Random _random; // TODO: Replace with a concurrent version
+	
 	public GrainedLockSprayListPriorityQueue(int maxAllowedHeight) {
 		super(maxAllowedHeight);
-		// TODO Auto-generated constructor stub
+		_threads = new AtomicInteger(0);
+		_random = new Random();
 	}
 
 	@Override
 	protected void startInsert() {
-		// TODO Auto-generated method stub
+		_threads.incrementAndGet();
 		
 	}
 
 	@Override
 	protected void endInsert() {
-		// TODO Auto-generated method stub
+		_threads.decrementAndGet();
 		
 	}
 
 	@Override
 	protected int randomLevel() {
-		// TODO Auto-generated method stub
-		return 0;
+		return randomStep(_maxAllowedHeight);
 	}
 
 	@Override
 	protected void startDeleteMin() {
-		// TODO Auto-generated method stub
-		
+		_threads.incrementAndGet();
 	}
 
 	@Override
 	protected void endDeleteMin() {
-		// TODO Auto-generated method stub
-		
+		_threads.decrementAndGet();
 	}
 
 	@Override
 	protected int getNumberOfThreads() {
 		// TODO Auto-generated method stub
-		return 0;
+		return _threads.get();
 	}
 
 	@Override
 	protected int randomStep(int max) {
 		// TODO Auto-generated method stub
-		return 0;
+		return _random.nextInt(max+1);
+	}
+
+	@Override
+	protected boolean canInsertBetween(SprayListNode pred, SprayListNode succ, int level)
+	{
+		return !pred.isMarked() && !succ.isMarked() && pred.next[level].getReference()==succ;
+	}
+
+	@Override
+	protected void lockNode(SprayListNode node) {
+		node.lock.lock();
+		
+	}
+
+	@Override
+	protected void unlockNode(SprayListNode node) {
+		node.lock.unlock();
+	}
+
+	@Override
+	protected boolean readyToBeDeleted(SprayListNode node) {
+		return node.isFullyLinked() && !node.isMarked();
 	}
 
 }

@@ -49,4 +49,29 @@ public class FreestyleSprayListPriorityQueue extends SprayListPriorityQueue {
 		return 0;
 	}
 
+	@Override
+	protected boolean canInsertBetween(SprayListNode pred, SprayListNode succ,
+			int level) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	protected void lockNode(SprayListNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void unlockNode(SprayListNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected boolean readyToBeDeleted(SprayListNode victim) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
