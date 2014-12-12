@@ -17,12 +17,29 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		public SprayListNode(int value, int height)
 		{
 			this.value = value;
-			next = (AtomicMarkableReference<SprayListNode>[]) new AtomicMarkableReference[height]; // TODO: Verify +/-1
+			next = (AtomicMarkableReference<SprayListNode>[]) new AtomicMarkableReference[height+1]; // TODO: Verify +/-1
 		}
 		
 		public int topLevel()
 		{
 			return next.length-1; // TODO: Verify +/-1
+		}
+		
+		/**
+		 * Atomically marks this node as deleted
+		 * returns the old mark value
+		 * *** ONLY USE THIS as a single node mark, for implementations using locks ***
+		 * @return
+		 */
+		public boolean tryMark()
+		{
+			SprayListNode succ = next[0].getReference();
+			return next[0].attemptMark(succ, true);
+		}
+		
+		public boolean isMarked()
+		{
+			return next[0].isMarked();
 		}
 	}
 	
@@ -31,7 +48,7 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		_maxAllowedHeight = maxAllowedHeight;
 		_head = new SprayListNode(Integer.MIN_VALUE, maxAllowedHeight);
 		_tail = new SprayListNode(Integer.MAX_VALUE, maxAllowedHeight);
-		for(int i=0;i<_maxAllowedHeight;i++)
+		for(int i=0;i<=_maxAllowedHeight;i++)
 		{
 			_head.next[i] =
 					new AtomicMarkableReference<SprayListNode>(
@@ -140,7 +157,7 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		int L = (int) (/*M * */ Math.pow(Math.log(p),3));
 		int D = 1; /* Math.max(1, log(log(p))) */
 		int result = spray(H,L,D);
-		remove(result);
+		remove(result); // TODO: Need to test if remove was successful? otherwise maybe some other thread returned and removed our value
 		endDeleteMin();
 		return result;
 	}
@@ -160,7 +177,7 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 		while(level>=0)
 		{
 			int j = randomStep(L);
-			for(;j>0;j--)
+			for(;j>0 || x==_head;j--)
 			{
 				x = x.next[level].getReference();
 			}
@@ -185,48 +202,53 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 			{
 				victim = succs[lFound];
 			}
-			if (isMarked |  (lFound != -1 &&   (victim.isFullyLinked   && victim.topLevel == lFound  && !victim.marked)))
+			if (isMarked ||  (lFound != -1 &&   (/*victim.isFullyLinked  &&*/ victim.topLevel() == lFound/*  && !victim.isMarked()*/)))
 			{
 				if(!isMarked)
 				{
 					topLevel = victim.topLevel();
-					victim.lock.lock();
-					if(victim.marked)
-					{
-						victim.lock.unlock();
-						return false;
-					}
-				victim.marked = true;
+					//victim.lock.lock();
+//					if(victim.isMarked())
+//					{
+//						//victim.lock.unlock();
+//						return;// false;
+//					}
+//				victim.marked = true;
 				isMarked = true;
 				}
+
+				int highestLocked = -1;
+				try
+				{
+					SprayListNode pred, succ;
+					boolean valid = true;
+					for (int level = 0; valid && (level <= topLevel); level++)
+					{
+						pred = preds[level];
+	//			        pred.lock.lock();
+						highestLocked = level;
+						valid = true;//!pred.marked && pred.next[level]==victim;
+					}
+//					if (!valid) continue;
+					for (int level = topLevel; level >= 0; level--)
+					{
+						preds[level].next[level] = victim.next[level];	// TODO: only copy reference, don't mess with the mark
+					}
+//					victim.lock.unlock();
+					return;// true;
+				}
+				finally
+				{
+					for (int i = 0; i <= highestLocked; i++)
+					{
+//						preds[i].unlock();
+					}
+				}
 			}
-			int highestLocked = -1;
-			try
+			else
 			{
-				Node<T> pred, succ;
-				boolean valid = true;
-				for (int level = 0; valid && (level <= topLevel); level++)
-				{
-					pred = preds[level];
-			        pred.lock.lock();
-		         	highestLocked = level;
-		         	valid = !pred.marked && pred.next[level]==victim;
-				}
-				if (!valid) continue;
-				for (int level = topLevel; level >= 0; level--)
-				{
-					preds[level].next[level] = victim.next[level];	
-				}
-				victim.lock.unlock();
-				return true;
+//				return false;
 			}
-			finally
-			{
-				for (int i = 0; i <= highestLocked; i++)
-				{
-					preds[i].unlock();
-				}
-			}else return false;
 		}
 	}
 
@@ -238,7 +260,7 @@ public abstract class SprayListPriorityQueue implements IPriorityQueue {
 	@Override
 	public boolean isEmpty() {
 		// TODO Auto-generated method stub
-		return false;
+		return _head.next[0].getReference() == _tail;
 	}
 
 	@Override

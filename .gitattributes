@@ -9,3 +9,4 @@ PriorityQWorkshop/src/priorityQueue/NaiveLockNativePriorityQueue.java -text svne
 PriorityQWorkshop/src/priorityQueue/NaiveLockSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/SprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/TransactioalMemorySprayListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/tests/maintest.java -text svneol=unset#text/plain
