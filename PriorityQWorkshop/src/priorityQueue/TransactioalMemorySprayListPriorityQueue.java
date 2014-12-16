@@ -1,28 +1,35 @@
 package priorityQueue;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.deuce.Atomic;
 
 public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQueue {
 
 	Random _random;
-	int _threads;
+	AtomicInteger _threads;
 	
 	public TransactioalMemorySprayListPriorityQueue(int maxAllowedHeight) {
 		super(maxAllowedHeight);
+		_threads = new AtomicInteger(0);
 		_random = new Random();
 	}
 
 	@Override
 	@Atomic
+	public void insert(int value) { 
+		_threads.incrementAndGet();
+		super.insert(value);
+	}
+	
+	@Override
 	protected void startInsert() {
-		_threads++;
 	}
 
 	@Override
 	protected void endInsert() {
-		_threads--;	
+		_threads.decrementAndGet();
 		
 	}
 
@@ -30,21 +37,28 @@ public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQ
 	protected int randomLevel() {
 		return randomStep(_maxAllowedHeight);
 	}
-
-	@Override
+	
 	@Atomic
+	@Override
+	public int deleteMin() {
+		_threads.incrementAndGet();
+		return super.deleteMin();
+		
+	}
+	
+	@Override
 	protected void startDeleteMin() {
-		_threads++;
+		
 	}
 
 	@Override
 	protected void endDeleteMin() {
-		_threads--;
+		_threads.decrementAndGet();
 	}
 
 	@Override
 	protected int getNumberOfThreads() {
-		return _threads;
+		return _threads.get();
 	}
 
 	@Override
