@@ -5,65 +5,33 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class NaiveLockSprayListPriorityQueue extends SprayListPriorityQueue {
 
-	int _threads;
 	Random _random;
 	private final ReentrantLock _lock;
 	
 	public NaiveLockSprayListPriorityQueue(int maxAllowedHeight) {
 		super(maxAllowedHeight);
-		_threads = 0;
 		_random = new Random();
 		_lock = new ReentrantLock();
-		// TODO Auto-generated constructor stub
 	}
-
+	
 	@Override
-	protected void startInsert() {
-		// TODO Auto-generated method stub
+	public void insert(int value) {
 		_lock.lock();
-		_threads++;
-		
-	}
-
-	@Override
-	protected void endInsert() {
-		// TODO Auto-generated method stub
-		_threads--;
+		super.insert(value);
 		_lock.unlock();
 	}
 
+	
 	@Override
-	protected int randomLevel() {
-		return randomStep(_maxAllowedHeight);
-		// TODO Auto-generated method stub
-//		return 0;
-	}
-
-	@Override
-	protected void startDeleteMin() {
-		// TODO Auto-generated method stub
+	public int deleteMin() {
+		int ret;
 		_lock.lock();
-		_threads++;
-	}
-
-	@Override
-	protected void endDeleteMin() {
-		// TODO Auto-generated method stub
-		_threads--;
+		ret = super.deleteMin();
 		_lock.unlock();
+		return ret;
 	}
 
-	@Override
-	protected int getNumberOfThreads() {
-		// TODO Auto-generated method stub
-		return _threads;
-	}
 
-	@Override
-	protected int randomStep(int max) {
-		// TODO Auto-generated method stub
-		return _random.nextInt(max+1);
-	}
 
 	@Override
 	protected boolean canInsertBetween(SprayListNode pred, SprayListNode succ,
@@ -73,14 +41,10 @@ public class NaiveLockSprayListPriorityQueue extends SprayListPriorityQueue {
 
 	@Override
 	protected void lockNode(SprayListNode node) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	protected void unlockNode(SprayListNode node) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

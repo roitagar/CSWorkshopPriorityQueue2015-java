@@ -7,30 +7,15 @@ import org.deuce.Atomic;
 
 public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQueue {
 
-	Random _random;
-	AtomicInteger _threads;
 	
 	public TransactioalMemorySprayListPriorityQueue(int maxAllowedHeight) {
 		super(maxAllowedHeight);
-		_threads = new AtomicInteger(0);
-		_random = new Random();
 	}
 
 	@Override
 	@Atomic
 	public void insert(int value) { 
-		_threads.incrementAndGet();
 		super.insert(value);
-	}
-	
-	@Override
-	protected void startInsert() {
-	}
-
-	@Override
-	protected void endInsert() {
-		_threads.decrementAndGet();
-		
 	}
 
 	@Override
@@ -41,29 +26,7 @@ public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQ
 	@Atomic
 	@Override
 	public int deleteMin() {
-		_threads.incrementAndGet();
-		return super.deleteMin();
-		
-	}
-	
-	@Override
-	protected void startDeleteMin() {
-		
-	}
-
-	@Override
-	protected void endDeleteMin() {
-		_threads.decrementAndGet();
-	}
-
-	@Override
-	protected int getNumberOfThreads() {
-		return _threads.get();
-	}
-
-	@Override
-	protected int randomStep(int max) {
-		return _random.nextInt(max+1);
+		return super.deleteMin();	
 	}
 
 	@Override

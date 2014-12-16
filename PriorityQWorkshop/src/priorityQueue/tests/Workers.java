@@ -21,11 +21,8 @@ public InsertWorker(IPriorityQueue queue, int from, int amount){
 }
 
 public void run(){
-	
 	for(int i=_from;i<_from+_amount;i++){
-		
-		_queue.insert(i);
-		
+		_queue.insert(i);		
 	}
 }
 }

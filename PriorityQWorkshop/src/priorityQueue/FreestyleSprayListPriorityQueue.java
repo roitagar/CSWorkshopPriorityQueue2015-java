@@ -1,19 +1,16 @@
 package priorityQueue;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicMarkableReference;
 
 import priorityQueue.SprayListPriorityQueue.SprayListNode;
+import priorityQueue.utils.LockFreeRandom;
 
-public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
+public class FreestyleSprayListPriorityQueue extends  AbstractSprayListPriorityQueue {
 
 	SprayListNode _head;
 	SprayListNode _tail;
-	int _maxAllowedHeight;
-	
-	AtomicInteger _threads;
-	Random _random;// TODO: Replace with a concurrent version
 	public static final class SprayListNode {
 		int value;
 		AtomicMarkableReference<SprayListNode>[] next;
@@ -22,7 +19,7 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 			this.value = value;
 			next = (AtomicMarkableReference<SprayListNode>[]) new AtomicMarkableReference[height+1]; // TODO: Verify +/-1
 			
-			for (int i = 0; i < next.length; i++) { //TODO : See if neccesery!
+			for (int i = 0; i < next.length; i++) {
 				next[i] = new AtomicMarkableReference<SprayListNode>(null,false);
 			}
 		}
@@ -35,9 +32,7 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 	}
 
 	public FreestyleSprayListPriorityQueue(int maxAllowedHeight) {
-		_maxAllowedHeight = maxAllowedHeight;
-		_threads = new AtomicInteger(0);
-		_random = new Random();
+		super(maxAllowedHeight);
 		
 		_head = new SprayListNode(Integer.MIN_VALUE, maxAllowedHeight);
 		_tail = new SprayListNode(Integer.MAX_VALUE, maxAllowedHeight);
@@ -100,7 +95,7 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 		_threads.getAndDecrement();
 	}
 	
-	boolean remove(int value) {
+	protected boolean remove(int value) {
 		SprayListNode[] preds = new SprayListNode[_maxAllowedHeight+1];
 		SprayListNode[] succs = new SprayListNode[_maxAllowedHeight+1];
 		SprayListNode succ;
@@ -143,47 +138,13 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 	
 	
 
-	private int randomLevel() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public int deleteMin() {
-		_threads.getAndIncrement();
-		boolean retry = false;
-		int result;
-		do
-		{
-			int p = getNumberOfThreads();
-			int H = (int) Math.log(p)/*+K*/;
-			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
-			int D = 1; /* Math.max(1, log(log(p))) */
-			result = spray(H,L,D);
-			retry = !remove(result);
-		} while(retry);
-		_threads.getAndDecrement();
-		return result;
-	}
-	
-	protected int getNumberOfThreads() {
-		// TODO Auto-generated method stub
-		return _threads.get();
-	}
-
-
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
 		return _head.next[0].getReference() == _tail;
-	}
-	@Override
-	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 	
 	// Finds a candidate for deleteMin
-	private int spray(int H, int L, int D)
+	protected int spray(int H, int L, int D)
 	{
 		SprayListNode x = _head;
 		int level = H;
@@ -233,9 +194,9 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 				return (curr.value == value);
 			}
 	}
+
 	
 	protected int randomStep(int max) {
-		// TODO Auto-generated method stub
-		return _random.nextInt(max+1);
+		return ThreadLocalRandom.current().nextInt(max+1);
 	}
 }
