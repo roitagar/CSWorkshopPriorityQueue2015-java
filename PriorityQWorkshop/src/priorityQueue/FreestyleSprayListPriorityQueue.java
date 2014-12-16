@@ -1,5 +1,7 @@
 package priorityQueue;
 
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicMarkableReference;
 
 import priorityQueue.SprayListPriorityQueue.SprayListNode;
@@ -10,6 +12,8 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 	SprayListNode _tail;
 	int _maxAllowedHeight;
 	
+	AtomicInteger _threads;
+	Random _random;// TODO: Replace with a concurrent version
 	public static final class SprayListNode {
 		int value;
 		AtomicMarkableReference<SprayListNode>[] next;
@@ -32,6 +36,8 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 
 	public FreestyleSprayListPriorityQueue(int maxAllowedHeight) {
 		_maxAllowedHeight = maxAllowedHeight;
+		_threads = new AtomicInteger(0);
+		_random = new Random();
 		
 		_head = new SprayListNode(Integer.MIN_VALUE, maxAllowedHeight);
 		_tail = new SprayListNode(Integer.MAX_VALUE, maxAllowedHeight);
@@ -50,18 +56,20 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 	}
 
 	public void insert(int value) {
+		_threads.getAndIncrement();
 		// long insert logic
 		int topLevel = randomLevel();
 		SprayListNode[] preds = new SprayListNode[_maxAllowedHeight+1];
 		SprayListNode[] succs = new SprayListNode[_maxAllowedHeight+1];
 		boolean success = false;
-		while(true)
+		while(!success)
 		{
 			boolean found = find(value, preds, succs);
 
 			if(found)
 			{
-				return; //TODO: Check if has to be boolean. In that case - it should return false
+				success = true;
+				break; //TODO: Check if has to be boolean. In that case - it should return false
 			}
 			else 
 			{
@@ -86,9 +94,10 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 						 find(value, preds, succs);	 
 					 }
 				 }
-				 return; //TODO :True;
+				 success = true; //TODO :True;
 			}
 		}
+		_threads.getAndDecrement();
 	}
 	
 	boolean remove(int value) {
@@ -139,22 +148,56 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 		return 0;
 	}
 
-	@Override
 	public int deleteMin() {
-		// TODO Auto-generated method stub
-		return 0;
+		_threads.getAndIncrement();
+		boolean retry = false;
+		int result;
+		do
+		{
+			int p = getNumberOfThreads();
+			int H = (int) Math.log(p)/*+K*/;
+			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
+			int D = 1; /* Math.max(1, log(log(p))) */
+			result = spray(H,L,D);
+			retry = !remove(result);
+		} while(retry);
+		_threads.getAndDecrement();
+		return result;
 	}
+	
+	protected int getNumberOfThreads() {
+		// TODO Auto-generated method stub
+		return _threads.get();
+	}
+
 
 	@Override
 	public boolean isEmpty() {
 		// TODO Auto-generated method stub
-		return false;
+		return _head.next[0].getReference() == _tail;
 	}
-
 	@Override
 	public int size() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	// Finds a candidate for deleteMin
+	private int spray(int H, int L, int D)
+	{
+		SprayListNode x = _head;
+		int level = H;
+		while(level>=0)
+		{
+			int j = randomStep(L);
+			for(;j>0 || x==_head;j--)
+			{
+				x = x.next[level].getReference();
+			}
+			level-=D;
+		}
+		
+		return x.value;
 	}
 
 	protected boolean find(int value, SprayListNode[] preds, SprayListNode[] succs)
@@ -189,5 +232,10 @@ public class FreestyleSprayListPriorityQueue implements  IPriorityQueue {
 				}
 				return (curr.value == value);
 			}
+	}
+	
+	protected int randomStep(int max) {
+		// TODO Auto-generated method stub
+		return _random.nextInt(max+1);
 	}
 }
