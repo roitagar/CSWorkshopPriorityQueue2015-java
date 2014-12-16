@@ -1,5 +1,6 @@
 package priorityQueue.tests;
 
+import priorityQueue.FreestyleSprayListPriorityQueue;
 import priorityQueue.GrainedLockSprayListPriorityQueue;
 import priorityQueue.IPriorityQueue;
 import priorityQueue.NaiveLockNativePriorityQueue;
@@ -10,7 +11,7 @@ public class maintest {
 
 	public static void main(String[] args) {
 		
-		testBench2();
+		testBench3();
 //		// TODO Auto-generated method stub
 //		IPriorityQueue pq;
 //		int res;
@@ -161,6 +162,80 @@ public class maintest {
 	  // Output the statistics
 	  System.out.println("time: " + timer.getElapsedTime());
   }
+  
+  public static void testBench3() {
+	  
+	  StopWatch timer = new StopWatch();
+	  
+//    PaddedPrimitiveNonVolatile<Boolean> doneDispatcher = new PaddedPrimitiveNonVolatile<Boolean>(false);
+//    PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
+//    PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
+
+
+    
+	  int numWorkers = 5;
+    
+    
+	  IPriorityQueue queue = new TransactioalMemorySprayListPriorityQueue(5);
+    
+   
+	  InsertWorker[] insertWorkers = new  InsertWorker[numWorkers]; 
+	  Thread[] insertWorkerThreads = new Thread[numWorkers];
+    
+	  for(int i=0;i<numWorkers; i++)
+	  {
+		  insertWorkers[i] = new InsertWorker(queue, 100*i ,100);
+    	  insertWorkerThreads[i] = new Thread(insertWorkers[i]);
+      }
+    
+	  DeleteWorker[] deleteWorkers = new  DeleteWorker[numWorkers]; 
+	  Thread[] deleteWorkerThreads = new Thread[numWorkers];
+
+	  for(int i=0;i<numWorkers; i++)
+	  {
+		  deleteWorkers[i] = new DeleteWorker(queue);
+		  deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
+	  }
+
+
+	  for(int i=0;i<numWorkers;i++)
+	  {
+		  insertWorkerThreads[i].start();
+	  }
+
+
+
+	  timer.startTimer();
+
+	  //    try {
+	  //         Thread.sleep(numMilliseconds);
+	  //    } catch (InterruptedException ignore) {;}
+
+
+	  for(int i=0;i<numWorkers;i++)
+	  {
+		  try {
+			  insertWorkerThreads[i].join();
+		  } catch (InterruptedException ignore) {;}
+	  }
+	  
+	  for(int i=0;i<numWorkers;i++)
+	  {
+		  deleteWorkerThreads[i].start();
+	  }
+
+	  for(int i=0;i<numWorkers;i++)
+	  {
+		  try {
+			  deleteWorkerThreads[i].join();
+		  } catch (InterruptedException ignore) {;}
+	  }
+	  timer.stopTimer();
+	  // Output the statistics
+
+	  System.out.println("time: " + timer.getElapsedTime());
+  }
+
 }
 
 
