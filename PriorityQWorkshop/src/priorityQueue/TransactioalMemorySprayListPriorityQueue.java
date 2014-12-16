@@ -1,59 +1,61 @@
 package priorityQueue;
 
+import java.util.Random;
+
+import org.deuce.Atomic;
+
 public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQueue {
 
+	Random _random;
+	int _threads;
+	
 	public TransactioalMemorySprayListPriorityQueue(int maxAllowedHeight) {
 		super(maxAllowedHeight);
-		// TODO Auto-generated constructor stub
+		_random = new Random();
 	}
 
 	@Override
+	@Atomic
 	protected void startInsert() {
-		// TODO Auto-generated method stub
-		
+		_threads++;
 	}
 
 	@Override
 	protected void endInsert() {
-		// TODO Auto-generated method stub
+		_threads--;	
 		
 	}
 
 	@Override
 	protected int randomLevel() {
-		// TODO Auto-generated method stub
-		return 0;
+		return randomStep(_maxAllowedHeight);
 	}
 
 	@Override
+	@Atomic
 	protected void startDeleteMin() {
-		// TODO Auto-generated method stub
-		
+		_threads++;
 	}
 
 	@Override
 	protected void endDeleteMin() {
-		// TODO Auto-generated method stub
-		
+		_threads--;
 	}
 
 	@Override
 	protected int getNumberOfThreads() {
-		// TODO Auto-generated method stub
-		return 0;
+		return _threads;
 	}
 
 	@Override
 	protected int randomStep(int max) {
-		// TODO Auto-generated method stub
-		return 0;
+		return _random.nextInt(max+1);
 	}
 
 	@Override
 	protected boolean canInsertBetween(SprayListNode pred, SprayListNode succ,
 			int level) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
@@ -70,8 +72,7 @@ public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQ
 
 	@Override
 	protected boolean readyToBeDeleted(SprayListNode victim) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 }
