@@ -35,7 +35,17 @@ public abstract class AbstractSprayListPriorityQueue implements IPriorityQueue {
 			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
 			result = spray(H,L,D);
-			retry = !remove(result);
+			if(result == Integer.MAX_VALUE)
+			{
+				if(isEmpty())
+					return result;
+				else
+					retry = true;
+			}
+			else
+			{
+				retry = !remove(result);
+			}
 		} while(retry);
 		_threads.decrementAndGet();
 		return result;

@@ -23,8 +23,8 @@ public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQ
 		return randomStep(_maxAllowedHeight);
 	}
 	
-	@Atomic
 	@Override
+	@Atomic
 	public int deleteMin() {
 		return super.deleteMin();	
 	}

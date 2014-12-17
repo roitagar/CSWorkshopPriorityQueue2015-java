@@ -13,18 +13,18 @@ public class maintest {
 
 //		IPriorityQueue pq = new TransactioalMemorySprayListPriorityQueue(5);
 //		IPriorityQueue pq = new FreestyleSprayListPriorityQueue(5);
-//		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
-		IPriorityQueue pq = new NaiveLockSprayListPriorityQueue(5);
+		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
+//		IPriorityQueue pq = new NaiveLockSprayListPriorityQueue(5);
 //		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
 
-		//Insert all and then delete all
-		testBench(pq);
+		//Insert & Delete min simultaneously
+//		testBench(pq);
 		
 		//Insert & Delete min simultaneously 
 //		testBench2(pq);
 		
-		//Insert & Delete min simultaneously
-//		testBench3(pq);
+		//Insert all and then delete all
+		testBench3(pq);
 		
 //		simpleTest(pq);
 	}
@@ -36,7 +36,7 @@ public class maintest {
 		pq.insert(104);
 		pq.insert(5);
 		pq.insert(1005);
-		while(!pq.isEmpty())
+		while(true)
 		{
 			res = pq.deleteMin();
 			System.out.println("got " + res);

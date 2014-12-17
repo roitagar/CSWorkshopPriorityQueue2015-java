@@ -250,7 +250,7 @@ public abstract class SprayListPriorityQueue extends AbstractSprayListPriorityQu
 		while(level>=0)
 		{
 			int j = randomStep(L);
-			for(;j>0 || x==_head;j--)
+			for(;(j>0 || x==_head) && x!=_tail;j--)
 			{
 				x = x.next[level];
 			}
