@@ -11,15 +11,21 @@ public class maintest {
 
 	public static void main(String[] args) {
 
-		//		IPriorityQueue pq = new TransactioalMemorySprayListPriorityQueue(5);
-		//		IPriorityQueue pq = new FreestyleSprayListPriorityQueue(5);
-		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
-		//		IPriorityQueue pq = new NaiveLockSprayListPriorityQueue(5);
-		//		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
+//		IPriorityQueue pq = new TransactioalMemorySprayListPriorityQueue(5);
+//		IPriorityQueue pq = new FreestyleSprayListPriorityQueue(5);
+//		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
+		IPriorityQueue pq = new NaiveLockSprayListPriorityQueue(5);
+//		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
 
+		//Insert all and then delete all
 		testBench(pq);
+		
+		//Insert & Delete min simultaneously 
 //		testBench2(pq);
+		
+		//Insert & Delete min simultaneously
 //		testBench3(pq);
+		
 //		simpleTest(pq);
 	}
 	private static void simpleTest(IPriorityQueue pq) {
