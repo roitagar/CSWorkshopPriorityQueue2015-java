@@ -17,9 +17,22 @@ public abstract class AbstractSprayListPriorityQueue implements IPriorityQueue {
 	}
 	
 	/* Abstract Methods */
+	
+	/**
+	 * Threads issues on insert:
+	 * 1. Trying to insert a value that is being insert by another thread
+	 * 2. Trying to insert a value that is being delete by another thread
+	 * 3. 
+	 */
 	public abstract void insert(int value);
+	
+	
 	protected abstract boolean remove(int value);
+	
+	
 	protected abstract int spray(int H, int L, int D); //TODO: Make it actual with polymorphism
+	
+	
 	public abstract boolean isEmpty();
 
 	
@@ -28,6 +41,7 @@ public abstract class AbstractSprayListPriorityQueue implements IPriorityQueue {
 		_threads.incrementAndGet();
 		boolean retry = false;
 		int result;
+		long tid = Thread.currentThread().getId();
 		do
 		{
 			int p = getNumberOfThreads();
@@ -35,6 +49,7 @@ public abstract class AbstractSprayListPriorityQueue implements IPriorityQueue {
 			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
 			result = spray(H,L,D);
+			System.out.println("Thread " + tid + ": After spray got "+ result);
 			if(result == Integer.MAX_VALUE)
 			{
 				if(isEmpty())
@@ -45,6 +60,8 @@ public abstract class AbstractSprayListPriorityQueue implements IPriorityQueue {
 			else
 			{
 				retry = !remove(result);
+				//(retry = true) means that another thread performed an action that affect the remove
+				System.out.println("Thread " + tid + ": After remove " + result + " got retry="+ retry);
 			}
 		} while(retry);
 		_threads.decrementAndGet();

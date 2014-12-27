@@ -22,6 +22,7 @@ public InsertWorker(IPriorityQueue queue, int from, int amount){
 
 public void run(){
 	for(int i=_from;i<_from+_amount;i++){
+//		System.out.println("");
 		_queue.insert(i);		
 	}
 }
@@ -41,6 +42,7 @@ public void run(){
 	while(!_queue.isEmpty())	
 	{
 		int result;
+		System.out.println("Starting delete min");
 		result = _queue.deleteMin();
 		System.out.println(result); //TODO modify
 	}

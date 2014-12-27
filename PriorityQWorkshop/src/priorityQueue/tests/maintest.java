@@ -11,9 +11,9 @@ public class maintest {
 
 	public static void main(String[] args) {
 
-//		IPriorityQueue pq = new TransactioalMemorySprayListPriorityQueue(5);
+		IPriorityQueue pq = new TransactioalMemorySprayListPriorityQueue(5);
 //		IPriorityQueue pq = new FreestyleSprayListPriorityQueue(5);
-		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
+//		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
 //		IPriorityQueue pq = new NaiveLockSprayListPriorityQueue(5);
 //		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
 

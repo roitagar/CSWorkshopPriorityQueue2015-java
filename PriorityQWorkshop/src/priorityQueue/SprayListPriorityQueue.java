@@ -3,6 +3,8 @@ package priorityQueue;
 import java.util.concurrent.atomic.AtomicMarkableReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.deuce.transaction.TransactionException;
+
 public abstract class SprayListPriorityQueue extends AbstractSprayListPriorityQueue {
 	SprayListNode _head;
 	SprayListNode _tail;
@@ -36,6 +38,10 @@ public abstract class SprayListPriorityQueue extends AbstractSprayListPriorityQu
 		 */
 		public void mark() {
 			_marked = true;
+		}
+		// TODO: REMOVE THIS METHOD, IT IS FOR TESTING
+		public void unmark() {
+			_marked = false;
 		}
 		public boolean isMarked()
 		{
@@ -177,9 +183,28 @@ public abstract class SprayListPriorityQueue extends AbstractSprayListPriorityQu
 		int topLevel = -1;
 		SprayListNode[] preds = new SprayListNode[_maxAllowedHeight+1];
 		SprayListNode[] succs = new SprayListNode[_maxAllowedHeight+1];
+		long tid = Thread.currentThread().getId();
+		int counter = 0;
+//		System.out.println("Thread " + tid + ": Start remove "+ value);
 		
 		while(true)
 		{
+//			System.out.println("Thread " + tid + ": Start while, mark=" + isMarked + " value=" + value);
+//			counter++;
+//			if(counter>200)
+//			{
+//				// TODO: Maybe keep this and change counter limit to a reasonable dynamic value
+//				// This is taking too long
+//				System.out.println("Thread " + tid + ": Abort remove");
+//				if(isMarked && victim!=null)
+//				{
+//					victim.unmark();
+//				}
+//			
+//				throw new TransactionException("Thread " + tid);
+//				return false;
+//			}
+			
 			int lFound = find(value, preds, succs);
 			if(lFound !=-1)
 			{
@@ -250,7 +275,13 @@ public abstract class SprayListPriorityQueue extends AbstractSprayListPriorityQu
 		while(level>=0)
 		{
 			int j = randomStep(L);
-			for(;(j>0 || x==_head) && x!=_tail;j--)
+			/* 
+			 * Don't stay on head
+			 * Don't advance beyond tail
+			 * Usually don't advance to tail
+			 * Advance to tail when list is empty
+			 */
+			for(;(j>0 || x==_head) && x!=_tail && (x.next[level] != _tail || isEmpty());j--)
 			{
 				x = x.next[level];
 			}

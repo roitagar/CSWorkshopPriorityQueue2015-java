@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.deuce.Atomic;
 
+import priorityQueue.SprayListPriorityQueue.SprayListNode;
+
 public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQueue {
 
 	
@@ -13,7 +15,7 @@ public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQ
 	}
 
 	@Override
-	@Atomic
+	@Atomic(retries=64)
 	public void insert(int value) { 
 		super.insert(value);
 	}
@@ -24,7 +26,7 @@ public class TransactioalMemorySprayListPriorityQueue extends SprayListPriorityQ
 	}
 	
 	@Override
-	@Atomic
+	@Atomic(retries=64)
 	public int deleteMin() {
 		return super.deleteMin();	
 	}
