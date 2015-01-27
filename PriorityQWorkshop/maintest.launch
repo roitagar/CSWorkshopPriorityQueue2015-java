@@ -8,5 +8,5 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="priorityQueue.tests.maintest"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="PriorityQWorkshop"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:lib/deuceAgent-2.0.jar"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:lib/deuceAgent-1.3.0.jar"/>
 </launchConfiguration>
