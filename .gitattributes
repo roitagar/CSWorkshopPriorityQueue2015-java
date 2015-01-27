@@ -3,6 +3,7 @@ PriorityQWorkshop/.classpath -text svneol=unset#text/plain
 PriorityQWorkshop/.project -text svneol=unset#text/plain
 PriorityQWorkshop/.settings/org.eclipse.jdt.core.prefs -text svneol=unset#text/plain
 PriorityQWorkshop/lib/deuceagent-2.0.jar -text
+PriorityQWorkshop/maintest.launch -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/AbstractSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/FreestyleSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/GrainedLockSprayListPriorityQueue.java -text svneol=unset#text/plain
