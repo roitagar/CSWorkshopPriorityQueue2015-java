@@ -4,14 +4,12 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 	SeqSprayListNode _head;
 	SeqSprayListNode _tail;
 	int _maxAllowedHeight;
-	int _size;
 	
 	public SeqSprayListPriorityQueue(int maxAllowedHeight)
 	{
 		_maxAllowedHeight = maxAllowedHeight;
 		_head = new SeqSprayListNode(Integer.MIN_VALUE, maxAllowedHeight);
 		_tail = new SeqSprayListNode(Integer.MAX_VALUE, maxAllowedHeight);
-		_size = 0;
 		/* connect the head sentinel to the tail sentinel */
 		for(int i=0;i<=_maxAllowedHeight;i++)
 		{
@@ -84,7 +82,6 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		{
 			preds[level].next[level] = newNode;
 		}
-		_size++;
 	}
 	
 	
@@ -103,12 +100,20 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		{
 			victim = succs[lFound];
 			topLevel = victim.topLevel();
+			
+			if(victim == _tail)
+			{
+				// Don't remove tail
+				// We got here because the list was empty during deleteMin
+				// this lets deleteMin retry only if the list is not empty
+				return isEmpty();
+			}
 
 			for (int level = topLevel; level >= 0; level--)
 			{
 				preds[level].next[level] = victim.next[level];
 			}
-			_size--;
+			
 			return true;
 		}
 
@@ -127,7 +132,13 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		while(level>=0)
 		{
 			int j = serviceClass.randomStep(L);
-			for(;j>0 || x==_head;j--)
+			/* 
+			 * Don't stay on head
+			 * Don't advance beyond tail
+			 * Usually don't advance to tail
+			 * Advance to tail when list is empty
+			 */
+			for(;(j>0 || x==_head) && x!=_tail && (x.next[level] != _tail || isEmpty());j--)
 			{
 				x = x.next[level];
 			}
@@ -142,7 +153,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		int result;
 		do
 		{
-			int p =1;
+			int p =1; // TODO: add a polymorphic thread counter
 			int H = (int) Math.log(p)/*+K*/;
 			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
@@ -154,14 +165,9 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 
 	@Override
 	public boolean isEmpty() {
-		return _size==0;
+		return _head.next[0] == _tail;
 	}
 
-	@Override
-	public int size() {
-		return _size;
-	}
-	
 	protected class SeqSprayListNode{
 		int value;
 		SeqSprayListNode[] next;
