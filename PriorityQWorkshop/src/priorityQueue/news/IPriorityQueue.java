@@ -1,4 +1,4 @@
-package priorityQueue;
+package priorityQueue.news;
 
 public interface IPriorityQueue {
 

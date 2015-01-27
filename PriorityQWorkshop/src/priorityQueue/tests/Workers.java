@@ -1,6 +1,6 @@
 package priorityQueue.tests;
 
-import priorityQueue.IPriorityQueue;
+import priorityQueue.news.IPriorityQueue;
 
 public class Workers {
 

@@ -3,7 +3,7 @@ package priorityQueue;
 import java.util.PriorityQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class NaiveLockNativePriorityQueue implements IPriorityQueue {
+public class NaiveLockNativePriorityQueue implements IPriorityQueueOld {
 	private final ReentrantLock _lock = new ReentrantLock();
 	
 	private PriorityQueue<Integer> _queue;

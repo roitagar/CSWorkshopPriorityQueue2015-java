@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import priorityQueue.SprayListPriorityQueue.SprayListNode;
 
-public abstract class AbstractSprayListPriorityQueue implements IPriorityQueue {
+public abstract class AbstractSprayListPriorityQueue implements IPriorityQueueOld {
 
 	protected  int _maxAllowedHeight;
 	protected AtomicInteger _threads;
