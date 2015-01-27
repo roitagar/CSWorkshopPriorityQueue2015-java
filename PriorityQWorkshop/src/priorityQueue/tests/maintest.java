@@ -1,21 +1,19 @@
 package priorityQueue.tests;
 
-import priorityQueue.FreestyleSprayListPriorityQueue;
-import priorityQueue.GrainedLockSprayListPriorityQueue;
-import priorityQueue.IPriorityQueue;
-import priorityQueue.NaiveLockNativePriorityQueue;
-import priorityQueue.NaiveLockSprayListPriorityQueue;
-import priorityQueue.TransactioalMemorySprayListPriorityQueue;
+import priorityQueue.news.GlobalLockSprayListPriorityQueue;
+import priorityQueue.news.IPriorityQueue;
+import priorityQueue.news.SeqSprayListPriorityQueue;
+import priorityQueue.news.TMSprayListPriorityQueue;
+
 
 public class maintest {
 
 	public static void main(String[] args) {
 
-		IPriorityQueue pq = new TransactioalMemorySprayListPriorityQueue(5);
-//		IPriorityQueue pq = new FreestyleSprayListPriorityQueue(5);
-//		IPriorityQueue pq = new GrainedLockSprayListPriorityQueue(5);
-//		IPriorityQueue pq = new NaiveLockSprayListPriorityQueue(5);
-//		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
+		
+		IPriorityQueue pq = new GlobalLockSprayListPriorityQueue(5);
+		//IPriorityQueue pq = new SeqSprayListPriorityQueue(5);
+		//IPriorityQueue pq = new TMSprayListPriorityQueue(5);
 
 		//Insert & Delete min simultaneously
 //		testBench(pq);
@@ -24,9 +22,9 @@ public class maintest {
 //		testBench2(pq);
 		
 		//Insert all and then delete all
-		testBench3(pq);
+		//testBench3(pq);
 		
-//		simpleTest(pq);
+		simpleTest(pq);
 	}
 	private static void simpleTest(IPriorityQueue pq) {
 		int res;
@@ -36,13 +34,16 @@ public class maintest {
 		pq.insert(104);
 		pq.insert(5);
 		pq.insert(1005);
-		while(true)
+		pq.insert(1);
+		
+		while(!pq.isEmpty())
 		{
 			res = pq.deleteMin();
 			System.out.println("got " + res);
 		}
 
 	}
+	
 	public static void testBench(IPriorityQueue queue) {
 
 		StopWatch timer = new StopWatch();
