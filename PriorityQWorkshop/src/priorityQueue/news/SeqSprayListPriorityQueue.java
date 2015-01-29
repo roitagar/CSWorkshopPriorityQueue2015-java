@@ -1,9 +1,9 @@
 package priorityQueue.news;
 
 public class SeqSprayListPriorityQueue implements IPriorityQueue {
-	SeqSprayListNode _head;
-	SeqSprayListNode _tail;
-	int _maxAllowedHeight;
+	protected SeqSprayListNode _head;
+	protected SeqSprayListNode _tail;
+	protected final int _maxAllowedHeight;
 	
 	public SeqSprayListPriorityQueue(int maxAllowedHeight)
 	{
@@ -50,7 +50,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 	
 
 	@Override
-	public void insert(int value) {
+	public boolean insert(int value) {
 		int topLevel = serviceClass.randomLevel(_maxAllowedHeight); //TODO: Check if static method is ok
 
 		SeqSprayListNode[] preds = new SeqSprayListNode[_maxAllowedHeight+1];
@@ -58,13 +58,12 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 
 		/* find the location for the new item with preds and succss arrays
 		 * if find returns an integer other then -1, it means that
-		 * the item is already exist - and we don't want to insert it again
+		 * the key is already exist - and we don't want to insert it again
 		 */
 		int lFound = find(value, preds, succs);
-
 		if(lFound != -1)
 		{
-			return;
+			return false;
 		}
 
 		/*Item is not on the list - so insert it */
@@ -82,6 +81,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		{
 			preds[level].next[level] = newNode;
 		}
+		return true;
 	}
 	
 	
@@ -94,7 +94,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 
 		int lFound = find(value, preds, succs);
 		
-		/* if node were found  - assign succs[lFound]  
+		/* if node were found -assign succs[lFound]  
 		 * (which contains the node we want to remove) to victim and remove it. */
 		if(lFound !=-1)
 		{
@@ -169,8 +169,8 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 	}
 
 	protected class SeqSprayListNode{
-		int value;
-		SeqSprayListNode[] next;
+		public int value;
+		public SeqSprayListNode[] next;
 		
 		public SeqSprayListNode(int value, int height)
 		{

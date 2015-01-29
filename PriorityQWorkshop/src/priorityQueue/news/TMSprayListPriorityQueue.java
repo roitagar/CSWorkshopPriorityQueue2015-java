@@ -10,8 +10,8 @@ public class TMSprayListPriorityQueue extends SeqSprayListPriorityQueue{
 	
 	@Override
 	@Atomic
-	public void insert(int value) { 
-		super.insert(value);
+	public boolean insert(int value) { 
+		return super.insert(value);
 	}
 	
 	@Atomic
