@@ -24,3 +24,5 @@ PriorityQWorkshop/src/priorityQueue/tests/StopWatch.java -text svneol=unset#text
 PriorityQWorkshop/src/priorityQueue/tests/Workers.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/tests/maintest.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/utils/LockFreeRandom.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/utils/PaddedPrimitive.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/utils/PaddedPrimitiveNonVolatile.java -text svneol=unset#text/plain

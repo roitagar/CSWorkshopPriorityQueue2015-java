@@ -4,6 +4,7 @@ import priorityQueue.news.GlobalLockSprayListPriorityQueue;
 import priorityQueue.news.IPriorityQueue;
 import priorityQueue.news.SeqSprayListPriorityQueue;
 import priorityQueue.news.TMSprayListPriorityQueue;
+import priorityQueue.utils.*;
 
 
 public class maintest {
@@ -12,8 +13,8 @@ public class maintest {
 
 		
 		IPriorityQueue pq = new GlobalLockSprayListPriorityQueue(5);
-		//IPriorityQueue pq = new SeqSprayListPriorityQueue(5);
-		//IPriorityQueue pq = new TMSprayListPriorityQueue(5);
+//		IPriorityQueue pq = new SeqSprayListPriorityQueue(5);
+//		IPriorityQueue pq = new TMSprayListPriorityQueue(5);
 
 		//Insert & Delete min simultaneously
 //		testBench(pq);
@@ -22,7 +23,10 @@ public class maintest {
 //		testBench2(pq);
 		
 		//Insert all and then delete all
-		//testBench3(pq);
+//		testBench3(pq);
+		
+		//Insert in an interleaving manner, DeleteMin simultaneously, using boolean flag to stop
+//		testBench4(pq);
 		
 		simpleTest(pq);
 	}
@@ -50,21 +54,21 @@ public class maintest {
 
 		int numWorkers = 5;
 
-		InsertWorker[] insertWorkers = new  InsertWorker[numWorkers]; 
+		SimpleInsertWorker[] insertWorkers = new  SimpleInsertWorker[numWorkers]; 
 		Thread[] insertWorkerThreads = new Thread[numWorkers];
 
 		for(int i=0;i<numWorkers; i++)
 		{
-			insertWorkers[i] = new InsertWorker(queue, 100*i ,100);
+			insertWorkers[i] = new SimpleInsertWorker(queue, 100*i ,100);
 			insertWorkerThreads[i] = new Thread(insertWorkers[i]);
 		}
 
-		DeleteWorker[] deleteWorkers = new  DeleteWorker[numWorkers]; 
+		SimpleDeleteWorker[] deleteWorkers = new  SimpleDeleteWorker[numWorkers]; 
 		Thread[] deleteWorkerThreads = new Thread[numWorkers];
 
 		for(int i=0;i<numWorkers; i++)
 		{
-			deleteWorkers[i] = new DeleteWorker(queue);
+			deleteWorkers[i] = new SimpleDeleteWorker(queue);
 			deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
 		}
 
@@ -105,21 +109,21 @@ public class maintest {
 
 		int numWorkers = 5;
 
-		InsertWorker[] insertWorkers = new InsertWorker[numWorkers]; 
+		SimpleInsertWorker[] insertWorkers = new SimpleInsertWorker[numWorkers]; 
 		Thread[] insertWorkerThreads = new Thread[numWorkers];
 
 		for(int i=0; i < numWorkers; i++)
 		{
-			insertWorkers[i] = new InsertWorker(queue, 100*i ,100);
+			insertWorkers[i] = new SimpleInsertWorker(queue, 100*i ,100);
 			insertWorkerThreads[i] = new Thread(insertWorkers[i]);
 		}
 
-		DeleteWorker[] deleteWorkers = new  DeleteWorker[numWorkers]; 
+		SimpleDeleteWorker[] deleteWorkers = new  SimpleDeleteWorker[numWorkers]; 
 		Thread[] deleteWorkerThreads = new Thread[numWorkers];
 
 		for(int i=0;i<numWorkers; i++)
 		{
-			deleteWorkers[i] = new DeleteWorker(queue);
+			deleteWorkers[i] = new SimpleDeleteWorker(queue);
 			deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
 		}
 
@@ -165,21 +169,21 @@ public class maintest {
 
 		int numWorkers = 5;
 
-		InsertWorker[] insertWorkers = new  InsertWorker[numWorkers]; 
+		SimpleInsertWorker[] insertWorkers = new  SimpleInsertWorker[numWorkers]; 
 		Thread[] insertWorkerThreads = new Thread[numWorkers];
 
 		for(int i=0;i<numWorkers; i++)
 		{
-			insertWorkers[i] = new InsertWorker(queue, 100*i ,100);
+			insertWorkers[i] = new SimpleInsertWorker(queue, 100*i ,100);
 			insertWorkerThreads[i] = new Thread(insertWorkers[i]);
 		}
 
-		DeleteWorker[] deleteWorkers = new  DeleteWorker[numWorkers]; 
+		SimpleDeleteWorker[] deleteWorkers = new  SimpleDeleteWorker[numWorkers]; 
 		Thread[] deleteWorkerThreads = new Thread[numWorkers];
 
 		for(int i=0;i<numWorkers; i++)
 		{
-			deleteWorkers[i] = new DeleteWorker(queue);
+			deleteWorkers[i] = new SimpleDeleteWorker(queue);
 			deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
 		}
 
@@ -222,6 +226,116 @@ public class maintest {
 		System.out.println("time: " + timer.getElapsedTime());
 	}
 
+	private static class StepGenerator implements INumberGenerator
+	{
+		final int _step;
+		int _seed;
+		
+		public StepGenerator(int seed, int step)
+		{
+			_step = step;
+			_seed = seed;
+		}
+		
+		@Override
+		public int getNext() {
+			int tmp = _seed;
+			_seed += _step;
+			return tmp;
+		}
+	}
+	
+	/**
+	 * All workers run for a constant amount of time, interleaved values inserted
+	 */
+	public static void testBench4(IPriorityQueue queue)
+	{
+		StopWatch timer = new StopWatch();
+
+		int numWorkers = 5;
+		int numMilliseconds = 200;
+
+		// Allocate and initialize locks and any signals used to marshal threads (eg. done signals)
+		PaddedPrimitiveNonVolatile<Boolean> doneDispatcher = new PaddedPrimitiveNonVolatile<Boolean>(false);
+		PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
+		PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
+
+		AdvancedInsertWorker[] insertWorkers = new  AdvancedInsertWorker[numWorkers]; 
+		Thread[] insertWorkerThreads = new Thread[numWorkers];
+
+		for(int i=0;i<numWorkers; i++)
+		{
+			// Initialize insert workers with interleaving number generators
+			insertWorkers[i] = new AdvancedInsertWorker(doneDispatcher, new StepGenerator(i,  numWorkers), queue);
+			insertWorkerThreads[i] = new Thread(insertWorkers[i]);
+		}
+
+		AdvancedDeleteWorker[] deleteWorkers = new  AdvancedDeleteWorker[numWorkers]; 
+		Thread[] deleteWorkerThreads = new Thread[numWorkers];
+
+		for(int i=0;i<numWorkers; i++)
+		{
+			deleteWorkers[i] = new AdvancedDeleteWorker(doneWorkers, queue);
+			deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
+		}
+
+		
+		// Start all the workers
+		for(int i=0;i<numWorkers;i++)
+		{
+			deleteWorkerThreads[i].start();
+		}
+		
+		timer.startTimer();
+
+		for(int i=0;i<numWorkers;i++)
+		{
+			insertWorkerThreads[i].start();
+		}
+
+
+		try {
+			Thread.sleep(numMilliseconds);
+		} catch (InterruptedException ignore) {;}
+
+		
+		// stop insert workers
+		doneDispatcher.value = true;
+		memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+							   // which means that done.value is visible to the workers
+		
+		for(int i=0;i<numWorkers;i++)
+		{
+			try {
+				insertWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+
+		// Stop delete Workers - they are responsible for leaving the queue empty
+		doneWorkers.value = true;
+		memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+							   // which means that done.value is visible to the workers
+
+		for(int i=0;i<numWorkers;i++)
+		{
+			try {
+				deleteWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+		
+		timer.stopTimer();
+		// Output the statistics
+
+		long totalCount = 0;
+		for(int i=0;i<numWorkers;i++)
+		{
+			totalCount+= deleteWorkers[i]._totalPackets;
+		}
+		
+		System.out.println("count: " + totalCount);
+		System.out.println("time: " + timer.getElapsedTime());
+		System.out.println(totalCount/timer.getElapsedTime() + " pkts / ms");
+	}
 }
 
 
