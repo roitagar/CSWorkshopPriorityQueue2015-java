@@ -17,7 +17,7 @@ public class FreestyleSprayListPriorityQueue extends  AbstractSprayListPriorityQ
 		
 		public SprayListNode(int value, int height) {
 			this.value = value;
-			next = (AtomicMarkableReference<SprayListNode>[]) new AtomicMarkableReference[height+1]; // TODO: Verify +/-1
+			next = (AtomicMarkableReference<SprayListNode>[]) new AtomicMarkableReference[height+1];
 			
 			for (int i = 0; i < next.length; i++) {
 				next[i] = new AtomicMarkableReference<SprayListNode>(null,false);
@@ -26,7 +26,7 @@ public class FreestyleSprayListPriorityQueue extends  AbstractSprayListPriorityQ
 		
 		public int topLevel()
 		{
-			return next.length-1; // TODO: Verify +/-1
+			return next.length-1;
 		}
 		
 	}

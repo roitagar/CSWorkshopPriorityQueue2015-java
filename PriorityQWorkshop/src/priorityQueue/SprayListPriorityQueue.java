@@ -22,12 +22,12 @@ public abstract class SprayListPriorityQueue extends AbstractSprayListPriorityQu
 			this.value = value;
 			this._fullyLinked = false;
 			this._marked = false;
-			next =  new SprayListNode[height+1]; // TODO: Verify +/-1
+			next =  new SprayListNode[height+1];
 		}
 		
 		public int topLevel()
 		{
-			return next.length-1; // TODO: Verify +/-1
+			return next.length-1;
 		}
 		
 		/**

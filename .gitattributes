@@ -10,13 +10,13 @@ PriorityQWorkshop/src/priorityQueue/FreestyleSprayListPriorityQueue.java -text s
 PriorityQWorkshop/src/priorityQueue/GrainedLockSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/IPriorityQueueOld.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/LockFreeSprayListPriorityQueue.java -text svneol=unset#text/plain
-PriorityQWorkshop/src/priorityQueue/NaiveLockNativePriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/NaiveLockSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/SprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/TransactioalMemorySprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/GlobalLockSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/IPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/LazyLockSparyListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/news/NaiveLockNativePriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/SeqSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/TMSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/serviceClass.java -text svneol=unset#text/plain

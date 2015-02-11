@@ -25,7 +25,7 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 		}
 	}
 	
-	/*This implementation of find is identical to the serial one, and is wait-free */
+	/*This implementation of find is identical to the serial one, and it is wait-free */
 	protected int find(int value, LazyLockSprayListNode[] preds, LazyLockSprayListNode[] succs)
 	{
 		int lFound = -1;
@@ -35,7 +35,6 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 		 * if node was found - set lFound with the level it was initially found
 		 * Note: if a node was found - the succs array cells,
 		 * from lFound down to 0, should all point to it. 
-		 * !
 		 */
 		for(int level = _maxAllowedHeight;level>=0;level--)
 		{
@@ -72,8 +71,8 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 		{
 			/* Find the location for the new item with predecessors and successors arrays
 			 * if find returns an integer other then -1, it means that the key is already exist (physically!).
-			 * In this implementation we also have to check if the item is logically exists(by checking node.isMark = false).
-			 * If it also logically exist - wait until it will be fully linked (in case other thread inserting the same key)
+			 * In this implementation we also have to check if the key is logically exists(by checking node.isMark = false).
+			 * If it also logically exist - wait until it will be fully linked (in a case when other thread is inserting the same key)
 			 * and then return false - because we don't want to add it.
 			 * otherwise - it is logically deleted - and it is about to be physically deleted, so try again.
 			 * Note that if the node is not fully linked - it cannot be marked (see: Remove method),
@@ -104,6 +103,7 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 				continue;
 			}
 
+			/* this variable will indicate the level I arrived while locking, in order to release all the lock until this level */	
 			int highestLocked = -1;
 			try
 			{
@@ -113,8 +113,8 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 				/* Try to acquire the locks of all the predecessor bottom up - in order to avoid deadlock
 				 * (Remove behaves the same way when acquiring locks).
 				 * Note that from the moment we found the appropriate location for insertion,
-				 * and until we finished lock all the predecessors, 
-				 * the structure can changed in a way we have to start over:
+				 * and until we finished to lock all the predecessors, 
+				 * the structure can be changed in a way we have to start over:
 				 * - Either one or more of the predecessors or the successors can be deleted,
 				 * - Or one or more nodes were inserted between one or more of the predecessors and the successors.
 				 * Therefore we must validate it was not occurred, and if it was - start over.
@@ -157,7 +157,7 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 			}
 			finally
 			{
-				/* Release all the predecessors locks */
+				/* Release all the predecessors locks *that I locked* (highestLocked) in order to not release someone's else lock*/
 				for(int level = 0; level<=highestLocked; level++)
 				{
 					preds[level].unlock();
@@ -192,11 +192,20 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 				victim = succs[lFound];
 			}
 			
-			//TODO: WRITE a COMMENT!!!
-			// testing topLevel==lFound is not necessarily required, due to the otehr two checks
+			/* Try to delete if (isMarked == true) - means the current thread has already started to delete this node,
+			 * failed because of validation and now it retries OR:
+			 * 
+			 * This is the first time thread tries do delete and all the following condition are satisfied:
+			 * 1. A victim was found
+			 * 2. The victim is fully linked - means that it is not being inserted now.
+			 *    Note that a non fully linked node is not considered as exist - therefore it cannot be deleted
+			 * 3. The victim's top level equal to lFound - means that the victim is not in a process of insertion
+			 *    or other deletion.
+			 * 4. The victim was not not logically removed and is not being removed by other thread 
+			 */
 			if (isMarked ||  (lFound != -1 &&
 					victim.isFullyLinked()  && 
-					victim.topLevel() == lFound  && 
+					victim.topLevel() == lFound &&
 					!victim.isMarked())) {
 				
 				/*Check if the node was already marked by me.
@@ -211,6 +220,7 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 					 * In this case, victim will be release only after the current thread will delete it.
 					 */
 						victim.lock();
+						
 						if(victim.isMarked())
 						{
 							 /*	This is a linearization point of unsuccessful remove.*/
@@ -225,10 +235,11 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 
 				/*Now the victim is mine - locked and marked, and I have to remove it */
 				
+				/* this variable will indicate the level I arrived while locking, in order to release all the lock until this level */
 				int highestLocked = -1;
 				try
 				{
-					LazyLockSprayListNode pred, succ;
+					LazyLockSprayListNode pred;
 					boolean valid = true;
 					
 					/* Try to acquire the locks of all the predecessor bottom up - in order to avoid deadlock
@@ -259,13 +270,14 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 					{
 						preds[level].next[level] = victim.next[level];
 					}
+					
 					/* Release the lock of the victim - and return true*/
 					victim.unlock();
 					return true;
 				}
 				finally
 				{
-					/* Release all the predecessors locks */
+					/* Release all the predecessors locks *that I locked* (highestLocked) in order to not release someone's else lock*/
 					for (int i = 0; i <= highestLocked; i++)
 					{
 						preds[i].unlock();
@@ -274,22 +286,72 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 			}
 			else
 			{
-				// Item was either not found, or not ready for deletion (in the middle of insert/remove)
+				/* Node was either not found, or not ready for deletion */
 				return false;
 			}
 		}
 	}
 
+	/* spray finds a candidate for deleteMin */
+	protected int spray(int H, int L, int D)
+	{
+		LazyLockSprayListNode x = _head;
+		int level = H;
+		while(level>=0)
+		{
+			int j = serviceClass.randomStep(L);
+			/* 
+			 * Don't stay on head
+			 * Don't advance beyond tail
+			 * Usually don't advance to tail
+			 * Advance to tail when list is empty
+			 */
+			for(;(j>0 || x==_head) && x!=_tail && (x.next[level] != _tail || isEmpty());j--)
+			{
+				x = x.next[level];
+			}
+			level-=D;
+		}
+		
+		return x.value;
+	}
+	
+	//TODO: Do we really need the test here?
 	@Override
 	public int deleteMin() {
-		// TODO Auto-generated method stub
-		return 0;
+		_threads.incrementAndGet();
+		boolean retry = false;
+		int result;
+		//long tid = Thread.currentThread().getId();
+		do
+		{
+			int p = _threads.get();
+			int H = (int) Math.log(p)/*+K*/;
+			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
+			int D = 1; /* Math.max(1, log(log(p))) */
+			result = spray(H,L,D);
+			//System.out.println("Thread " + tid + ": After spray got "+ result);
+			if(result == Integer.MAX_VALUE)
+			{
+				if(isEmpty())
+					return result;
+				else
+					retry = true;
+			}
+			else
+			{
+				retry = !remove(result);
+				//(retry = true) means that another thread performed an action that affect the remove
+				//System.out.println("Thread " + tid + ": After remove " + result + " got retry="+ retry);
+			}
+		} while(retry);
+		_threads.decrementAndGet();
+		return result;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		return _head.next[0] == _tail;
 	}
 	
 	
@@ -298,7 +360,7 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 		public int value;
 		public LazyLockSprayListNode[] next;
 		
-		/*Each Node has a lock and also has to flags:
+		/* Each Node has a lock and also has to flags:
 		 * fullyLinked - true if the node is pointed by all its predecessors, and points to all it successors
 		 * marked - true if the node was logically deleted
 		 */
@@ -312,12 +374,12 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 			this.value = value;
 			this._fullyLinked = false;
 			this._marked = false;
-			next =  new LazyLockSprayListNode[height+1]; // TODO: Verify +/-1
+			next =  new LazyLockSprayListNode[height+1];
 		}
 		
 		public int topLevel()
 		{
-			return next.length-1; // TODO: Verify +/-1
+			return next.length-1;
 		}
 		
 		public void mark() {

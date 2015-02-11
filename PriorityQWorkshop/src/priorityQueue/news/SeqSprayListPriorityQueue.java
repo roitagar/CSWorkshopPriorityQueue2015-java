@@ -153,7 +153,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		int result;
 		do
 		{
-			int p =1; // TODO: add a polymorphic thread counter
+			int p = 1; // There is always one active thread each time
 			int H = (int) Math.log(p)/*+K*/;
 			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
@@ -175,12 +175,12 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		public SeqSprayListNode(int value, int height)
 		{
 			this.value = value;
-			next =  new SeqSprayListNode[height+1]; // TODO: Verify +/-1
+			next =  new SeqSprayListNode[height+1];
 		}
 		
 		public int topLevel()
 		{
-			return next.length-1; // TODO: Verify +/-1
+			return next.length-1;
 		}
 	}
 

@@ -16,8 +16,8 @@ public class GlobalLockSprayListPriorityQueue extends SeqSprayListPriorityQueue{
 	@Override
 	public boolean insert(int value) {
 		boolean ret = false;
-		try{
-			_lock.lock();
+		_lock.lock();
+		try{		
 			ret = super.insert(value);
 		}
 		finally {
@@ -28,8 +28,8 @@ public class GlobalLockSprayListPriorityQueue extends SeqSprayListPriorityQueue{
 	@Override
 	public int deleteMin() {
 		int ret;
+		_lock.lock();
 		try {
-			_lock.lock();
 			ret = super.deleteMin();
 		}
 		finally {
