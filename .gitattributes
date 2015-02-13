@@ -13,6 +13,7 @@ PriorityQWorkshop/src/priorityQueue/LockFreeSprayListPriorityQueue.java -text sv
 PriorityQWorkshop/src/priorityQueue/NaiveLockSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/SprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/TransactioalMemorySprayListPriorityQueue.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/news/CoolSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/GlobalLockSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/IPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/LazyLockSparyListPriorityQueue.java -text svneol=unset#text/plain
