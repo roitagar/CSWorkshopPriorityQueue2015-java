@@ -38,7 +38,9 @@ public class maintest {
 //		testBench11(pq, 5, 5, 700);
 //		testBench12(pq, 5, 5, 100000);
 //		testBench13(pq, 5, 5, 100000);
-		testBench14(pq, 1, 10, 1000);
+//		testBench14(pq, 1, 10, 1000);
+//		testBench15(pq, 10, 10, 1000);
+		testBench16(pq, 1, 10, 1000);
 
 		
 
@@ -1397,6 +1399,238 @@ public class maintest {
 		System.out.println("time: " + timer.getElapsedTime());
 		System.out.println(totalCount/timer.getElapsedTime() + " pkts / ms");
 	}
+	
+	public static void testBench15(IPriorityQueue queue, int numInsertWorkers, int numDeleteWorkers, int timeOutMilliseconds)
+	{
+
+
+		// Allocate and initialize locks and any signals used to marshal threads (eg. done signals)
+		PaddedPrimitiveNonVolatile<Boolean> doneDispatcher = new PaddedPrimitiveNonVolatile<Boolean>(false);
+		PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
+		PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
+
+		AdvancedInsertWorker[] insertWorkers = new  AdvancedInsertWorker[numInsertWorkers]; 
+		Thread[] insertWorkerThreads = new Thread[numInsertWorkers];
+
+		for(int i=0;i<numInsertWorkers; i++)
+		{
+			// Initialize insert workers with interleaving number generators
+			insertWorkers[i] = new AdvancedInsertWorker(doneDispatcher, new RandomStepGenerator(i), queue);
+			insertWorkerThreads[i] = new Thread(insertWorkers[i]);
+		}
+
+		AdvancedDeleteWorker[] deleteWorkers = new  AdvancedDeleteWorker[numDeleteWorkers]; 
+		Thread[] deleteWorkerThreads = new Thread[numDeleteWorkers];
+
+		for(int i=0;i<numDeleteWorkers; i++)
+		{
+			deleteWorkers[i] = new AdvancedDeleteWorker(doneWorkers, queue);
+			deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
+		}
+
+		/**********		 Insertion part	**********/
+
+		System.out.println("Starting insert...");
+		// Start insert workers
+		StopWatch timer = new StopWatch();
+		timer.startTimer();
+
+		for(int i=0;i<numInsertWorkers;i++)
+		{
+			insertWorkerThreads[i].start();
+		}
+
+
+		try {
+			Thread.sleep(timeOutMilliseconds);
+		} catch (InterruptedException ignore) {;}
+
+
+		// stop insert workers
+		doneDispatcher.value = true;
+		memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+		// which means that done.value is visible to the workers
+
+
+
+		for(int i=0;i<numInsertWorkers;i++)
+		{
+			try {
+				insertWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+
+
+		timer.stopTimer();
+
+		long totalInsertCount = 0;
+		for(int i=0;i<numInsertWorkers;i++)
+		{
+			totalInsertCount+= insertWorkers[i]._totalPackets;
+			//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
+			//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
+		}
+		// Output the statistics for insert only
+		long timeOfInsertion = timer.getElapsedTime();
+
+
+
+		/**********		 Deletion part  	**********/
+
+		// Start delete workers
+		timer = new StopWatch();
+		timer.startTimer();
+
+
+		for(int i=0;i<numDeleteWorkers;i++)
+		{
+			deleteWorkerThreads[i].start();
+		}
+
+
+		// Stop delete Workers - they are responsible for leaving the queue empty
+		doneWorkers.value = true;
+		memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+		// which means that done.value is visible to the workers
+
+		for(int i=0;i<numDeleteWorkers;i++)
+		{
+			try {
+				deleteWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+
+		timer.stopTimer();
+		// Output the statistics for delete only
+		long timeOfDeletion = timer.getElapsedTime();
+
+
+		long totalDeleteCount = 0;
+		for(int i=0;i<numDeleteWorkers;i++)
+		{
+			totalDeleteCount+= deleteWorkers[i]._totalPackets;
+		}
+
+
+		System.out.println("");
+		System.out.println("Num of insert workers: "+ numInsertWorkers );
+		System.out.println("insert count: " + totalInsertCount);
+		System.out.println("time: " + timeOfInsertion);
+		System.out.println(totalInsertCount/timeOfInsertion + " pkts / ms");	
+
+
+		System.out.println("");
+		System.out.println("Num of delete workers: "+ numDeleteWorkers );
+		System.out.println("delete min count: " + totalDeleteCount);
+		System.out.println("time: " + timeOfDeletion);
+		System.out.println(totalDeleteCount/timeOfDeletion + " pkts / ms");
+	}
+	
+	public static void testBench16(IPriorityQueue queue, int numInsertWorkers, int numDeleteWorkers, int timeOutMillisecond)
+	{
+		StopWatch timer = new StopWatch();
+
+
+		// Allocate and initialize locks and any signals used to marshal threads (eg. done signals)
+		PaddedPrimitiveNonVolatile<Boolean> doneDispatcher = new PaddedPrimitiveNonVolatile<Boolean>(false);
+		PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
+		PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
+
+		AdvancedInsertWorker[] insertWorkers = new  AdvancedInsertWorker[numInsertWorkers]; 
+		Thread[] insertWorkerThreads = new Thread[numInsertWorkers];
+
+		for(int i=0;i<numInsertWorkers; i++)
+		{
+			// Initialize insert workers with interleaving number generators
+			insertWorkers[i] = new AdvancedInsertWorker(doneDispatcher, new RandomStepGenerator(i), queue);
+			insertWorkerThreads[i] = new Thread(insertWorkers[i]);
+		}
+
+		AdvancedDeleteWorkerWithoutEmptying[] deleteWorkers = new  AdvancedDeleteWorkerWithoutEmptying[numDeleteWorkers]; 
+		Thread[] deleteWorkerThreads = new Thread[numDeleteWorkers];
+
+		for(int i=0;i<numDeleteWorkers; i++)
+		{
+			deleteWorkers[i] = new AdvancedDeleteWorkerWithoutEmptying(doneWorkers, queue);
+			deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
+		}
+
+
+		// Start all the workers
+		for(int i=0;i<numInsertWorkers;i++)
+		{
+			insertWorkerThreads[i].start();
+		}
+
+		timer.startTimer();
+
+
+		for(int i=0;i<numDeleteWorkers;i++)
+		{
+			deleteWorkerThreads[i].start();
+		}
+
+
+		try {
+			Thread.sleep(timeOutMillisecond);
+		} catch (InterruptedException ignore) {;}
+
+
+
+
+		//		boolean done = false;
+		//		while(!done )
+		//		{
+		//			System.out.println("timer: "+timer.getElapsedTime());
+		//			if(timer.getElapsedTime()>=timeOut){
+		//				done=true;
+		//			}
+		//		}
+
+
+
+		// Stop delete Workers - they are responsible for leaving the queue empty
+		doneWorkers.value = true;
+		memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+		// which means that done.value is visible to the workers
+
+
+		for(int i=0;i<numDeleteWorkers;i++)
+		{
+			try {
+				deleteWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+
+		timer.stopTimer();
+
+		// stop insert workers
+		doneDispatcher.value = true;
+		memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+		// which means that done.value is visible to the workers
+
+		for(int i=0;i<numInsertWorkers;i++)
+		{
+			try {
+				insertWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+
+		// Output the statistics for the delete min
+
+		long totalCount = 0;
+		for(int i=0;i<numDeleteWorkers;i++)
+		{
+			totalCount+= deleteWorkers[i]._totalPackets;
+		}
+		System.out.println("");
+		System.out.println("delete min count: " + totalCount);
+		System.out.println("time: " + timer.getElapsedTime());
+		System.out.println(totalCount/timer.getElapsedTime() + " pkts / ms");
+
+	}
+
+
 }
 
 
