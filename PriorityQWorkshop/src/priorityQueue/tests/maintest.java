@@ -1,9 +1,6 @@
 package priorityQueue.tests;
 
-import priorityQueue.news.GlobalLockSprayListPriorityQueue;
-import priorityQueue.news.IPriorityQueue;
-import priorityQueue.news.SeqSprayListPriorityQueue;
-import priorityQueue.news.TMSprayListPriorityQueue;
+import priorityQueue.news.*;
 import priorityQueue.utils.*;
 
 
@@ -12,10 +9,14 @@ public class maintest {
 	public static void main(String[] args) {
 
 
-		IPriorityQueue pq = new GlobalLockSprayListPriorityQueue(5);
-		//		IPriorityQueue pq = new SeqSprayListPriorityQueue(5);
-		//		IPriorityQueue pq = new TMSprayListPriorityQueue(5);
+		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
+//		IPriorityQueue pq = new GlobalLockSprayListPriorityQueue(10);
+//				IPriorityQueue pq = new SeqSprayListPriorityQueue(10);
+//				IPriorityQueue pq = new TMSprayListPriorityQueue(10);
+//		IPriorityQueue pq = new LockFreeSprayListPriorityQueue(10);
+//		IPriorityQueue pq = new CoolSprayListPriorityQueue(10);
 
+		
 		//Insert & Delete min simultaneously
 		//		testBench(pq);
 
@@ -23,7 +24,7 @@ public class maintest {
 		//		testBench2(pq);
 
 		//Insert all and then delete all
-		//		testBench3(pq);
+				testBench3(pq);
 
 		//Insert in an interleaving manner, DeleteMin simultaneously, using boolean flag to stop
 		//		testBench4(pq);
@@ -40,7 +41,7 @@ public class maintest {
 //		testBench13(pq, 5, 5, 100000);
 //		testBench14(pq, 1, 10, 1000);
 //		testBench15(pq, 10, 10, 1000);
-		testBench16(pq, 1, 10, 1000);
+//		testBench16(pq, 1, 10, 1000);
 
 		
 

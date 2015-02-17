@@ -225,7 +225,13 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 		while(level>=0)
 		{
 			int j = serviceClass.randomStep(L);
-			for(;j>0 || x==_head;j--)
+			/* 
+			 * Don't stay on head
+			 * Don't advance beyond tail
+			 * Usually don't advance to tail
+			 * Advance to tail when list is empty
+			 */
+			for(;(j>0 || x==_head) && x!=_tail && (x.next[level].getReference() != _tail || isEmpty());j--)
 			{
 				x = x.next[level].getReference();
 			}
@@ -252,10 +258,8 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 			//System.out.println("Thread " + tid + ": After spray got "+ result);
 			if(result == Integer.MAX_VALUE)
 			{
-				if(isEmpty())
-					return result;
-				else
-					retry = true;
+				// if we got tail's value, the list might be empty
+				retry = !isEmpty();
 			}
 			else
 			{
