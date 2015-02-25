@@ -1,7 +1,54 @@
 package priorityQueue.tests;
 
+import java.util.ArrayList;
+
 import priorityQueue.utils.*;
 import priorityQueue.news.IPriorityQueue;
+
+/**
+ * 
+ * @author adamelimelech
+ *
+ */
+class GradedWorkerBase {
+	IPriorityQueue _queue;
+	protected ArrayList<Integer> _values;
+
+	public GradedWorkerBase(IPriorityQueue queue) {
+		_queue = queue;
+		_values = new ArrayList<Integer>();
+	}
+	
+	public int deleteMin(){
+		int result = _queue.deleteMin();
+		if(result!=Integer.MAX_VALUE){
+			_values.add(result);
+		}
+		return result;
+	}
+
+	/**
+	 * Counting #inversions of the _value array 
+	 * 
+	 * Each delete worker creates an array, grade = 0 -> optimum 
+	 * @return
+	 */
+	public int getGrade(){
+		int grade=0;
+		
+		//check with bubble sort the goodness of the del. min
+		for(int i=0;i<_values.size()-1;i++){
+			for(int j=i;j<_values.size();j++){
+				if(_values.get(i)>_values.get(j)){
+					grade++;
+				}
+			}
+		}
+
+		return grade;
+	}
+
+}
 
 class SimpleInsertWorker implements Runnable {
 
@@ -22,11 +69,12 @@ class SimpleInsertWorker implements Runnable {
 	}
 }
 
-class SimpleDeleteWorker implements Runnable {
+class SimpleDeleteWorker extends GradedWorkerBase implements Runnable {
 
 	IPriorityQueue _queue;
 
 	public SimpleDeleteWorker(IPriorityQueue queue) {
+		super(queue);
 		this._queue = queue;
 	}
 
@@ -34,7 +82,7 @@ class SimpleDeleteWorker implements Runnable {
 		while (!_queue.isEmpty()) {
 			int result;
 
-			result = _queue.deleteMin();
+			result = deleteMin();
 			System.out.println(result); // TODO modify
 		}
 	}
@@ -44,6 +92,61 @@ interface INumberGenerator
 {
 	int getNext();
 }
+
+
+
+class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
+	final IPriorityQueue _queue;
+	final int _runs;
+	final int _highest;
+	ArrayList<Integer> _deleteMinList;
+
+	public AdvancedInsertAndDelete(
+			IPriorityQueue queue, int runs, int highest)
+	{
+		super(queue);
+		_queue = queue;
+		_runs=runs;
+		_deleteMinList = new ArrayList<Integer>();
+		_highest = highest;
+	}
+
+	@Override
+	public void run()
+	{
+		int counter=0;
+		int result;
+		int value;
+		while( _runs > counter)
+		{
+			result = _queue.deleteMin();
+			System.out.println(result);
+			_deleteMinList.add(result);
+			value = result + _highest;
+			System.out.println("Inserting: "+ value);
+			_queue.insert(value);
+			counter++;
+		}
+	}
+	/**
+	 * Ranking the worker - grade = 0 -> optimum
+	 * Each delete min with result which is higher then the _highest increasing grade by 1 (bad point)
+	 * @return
+	 */
+	@Override
+	public int getGrade(){
+		int grade=0;
+		for(int value : _deleteMinList){
+			if(value > _highest){
+				grade++;
+			}
+		}
+		return grade;
+
+	}
+
+}
+
 
 class AdvancedInsertWorker implements Runnable {
 	final PaddedPrimitiveNonVolatile<Boolean> _done;
@@ -69,8 +172,8 @@ class AdvancedInsertWorker implements Runnable {
 		{
 			int value = _generator.getNext();
 			if(value>0){
-			_queue.insert(value);
-			_totalPackets++;
+				_queue.insert(value);
+				_totalPackets++;
 			}
 		}
 	}
@@ -97,7 +200,7 @@ class AdvancedInsertWorkerUntilValue implements Runnable {
 	@Override
 	public void run()
 	{
-			
+
 		boolean reallyDone = false;
 		while( !reallyDone ) {
 			reallyDone = true; // if we got the last value we need to finish
@@ -118,7 +221,7 @@ class AdvancedInsertWorkerUntilValue implements Runnable {
 
 
 
-class AdvancedDeleteWorker implements Runnable
+class AdvancedDeleteWorker extends GradedWorkerBase implements Runnable
 {
 	final PaddedPrimitiveNonVolatile<Boolean> _done;
 	final IPriorityQueue _queue;
@@ -128,6 +231,7 @@ class AdvancedDeleteWorker implements Runnable
 			PaddedPrimitiveNonVolatile<Boolean> done,
 			IPriorityQueue queue)
 	{
+		super(queue);
 		_done = done;
 		_queue = queue;
 		_totalPackets = 0;
@@ -143,7 +247,7 @@ class AdvancedDeleteWorker implements Runnable
 			reallyDone = _done.value; // if done is marked, we might need to finish
 			int result;
 
-			result = _queue.deleteMin();
+			result = deleteMin();
 
 			if(result != Integer.MAX_VALUE)
 			{
@@ -161,7 +265,7 @@ class AdvancedDeleteWorker implements Runnable
 		}
 	}
 }
-class AdvancedDeleteWorkerWithoutEmptying implements Runnable
+class AdvancedDeleteWorkerWithoutEmptying extends GradedWorkerBase implements Runnable
 {
 	final PaddedPrimitiveNonVolatile<Boolean> _done;
 	final IPriorityQueue _queue;
@@ -171,6 +275,7 @@ class AdvancedDeleteWorkerWithoutEmptying implements Runnable
 			PaddedPrimitiveNonVolatile<Boolean> done,
 			IPriorityQueue queue)
 	{
+		super(queue);
 		_done = done;
 		_queue = queue;
 		_totalPackets = 0;
@@ -186,7 +291,7 @@ class AdvancedDeleteWorkerWithoutEmptying implements Runnable
 			done = _done.value; // if done is marked, we might need to finish
 			int result;
 
-			result = _queue.deleteMin();
+			result = deleteMin();
 
 			if(result != Integer.MAX_VALUE)
 			{
