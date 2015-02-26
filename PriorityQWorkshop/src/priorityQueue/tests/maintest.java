@@ -15,7 +15,7 @@ public class maintest {
 		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
 //				IPriorityQueue pq = new GlobalLockSprayListPriorityQueue(10);
 //						IPriorityQueue pq = new SeqSprayListPriorityQueue(10);
-//						IPriorityQueue pq = new TMSprayListPriorityQueue(10);
+//						IPriorityQueue pq = new TMSprayListPriorityQueue(10, true);
 //				IPriorityQueue pq = new LockFreeSprayListPriorityQueue(10);
 //				IPriorityQueue pq = new CoolSprayListPriorityQueue(10);
 

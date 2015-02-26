@@ -147,13 +147,22 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		
 		return x.value;
 	}
+	
+	/**
+	 * Returns the number of active threads. Used for spray height. 
+	 * concurrent implementations should override this for correctness.
+	 */
+	protected int getThreadCount() {
+		return 1; // There is always one active thread each time
+	}
+	
 	@Override
 	public int deleteMin() {
 		boolean retry = false;
 		int result;
 		do
 		{
-			int p = 1; // There is always one active thread each time
+			int p = getThreadCount();
 			int H = (int) Math.log(p)/*+K*/;
 			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
