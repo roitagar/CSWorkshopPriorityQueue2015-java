@@ -40,6 +40,9 @@ public abstract class TestBench {
 		return _result;
 	}
 
+	/**
+	 * two timers - insert and delete times are separate
+	 */
 	protected void saveResult(long insertTime, long deleteTime,	
 			long insertCount, long deleteCount,	int[] grade){
 
@@ -54,6 +57,14 @@ public abstract class TestBench {
 		_result=result;
 	}
 
+	/**
+	 * single timer - insert and delete are simultaneous
+	 */
+	protected void saveResult(long totalTime,	
+			long insertCount, long deleteCount,	int[] grade){
+		// TODO: add unified printing, consider the "0"
+		saveResult(0, totalTime, insertCount, deleteCount, grade);
+	}
 	class TestBenchResult {
 
 		long insertTime=0;
