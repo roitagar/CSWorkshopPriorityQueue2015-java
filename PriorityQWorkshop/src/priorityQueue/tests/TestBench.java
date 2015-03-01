@@ -9,7 +9,7 @@ public abstract class TestBench {
 	protected int _numInsertWorkers;
 	protected int _numDeleteWorkers;
 	protected int _highest;
-	protected int _timeOutMillisecond;
+	protected int _timeOutMilliseconds;
 
 
 
@@ -26,7 +26,7 @@ public abstract class TestBench {
 	}
 
 	public void setTimeOutMillisecond(int timeOutMillisecond){ 
-		_timeOutMillisecond = timeOutMillisecond;
+		_timeOutMilliseconds = timeOutMillisecond;
 	}
 
 	public abstract void run();
