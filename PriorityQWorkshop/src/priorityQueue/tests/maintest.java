@@ -64,7 +64,7 @@ public class maintest {
 						tb.setNumInsertWorkers(insertWorkerCount);
 						tb.setHighestOnQueue(100);
 						tb.setTimeOutMillisecond(20);
-						tb.run();
+						tb.runTest();
 						for(int k = 0;k<deleteWorkerCount;k++){
 							System.out.println(tb.getResult().grade[k]);
 						}
@@ -162,50 +162,6 @@ public class maintest {
 
 	}
 
-	public static TestBench testBench = new TestBench() {
-
-		@Override
-		public void run() {
-
-			int numWorkers = 5;
-
-			SimpleInsertWorker[] insertWorkers = new  SimpleInsertWorker[numWorkers]; 
-			_insertWorkerThreads = new Thread[numWorkers];
-
-			for(int i=0;i<numWorkers; i++)
-			{
-				insertWorkers[i] = new SimpleInsertWorker(_queue, 100*i ,100);
-				_insertWorkerThreads[i] = new Thread(insertWorkers[i]);
-			}
-
-			SimpleDeleteWorker[] deleteWorkers = new  SimpleDeleteWorker[numWorkers]; 
-			_deleteWorkerThreads = new Thread[numWorkers];
-
-			for(int i=0;i<numWorkers; i++)
-			{
-				deleteWorkers[i] = new SimpleDeleteWorker(_queue);
-				_deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
-			}
-
-
-			startAllWorkers();
-			//    try {
-			//         Thread.sleep(numMilliseconds);
-			//    } catch (InterruptedException ignore) {;}
-
-			joinInsertWorkers();
-			joinDeleteWorkers();
-
-			// Output the statistics
-
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-
-
-			//collect results from each worker
-			//each iteretion will call saveResult
-		}
-	};
-
 	public static TestBench testBench2 = new TestBench() {
 
 		final int _itemsPerThread = 100;
@@ -230,10 +186,6 @@ public class maintest {
 			}
 
 			startAllWorkers();
-
-			//	    try {
-			//	      Thread.sleep(numMilliseconds);
-			//	    } catch (InterruptedException ignore) {;}
 
 			joinInsertWorkers();
 
@@ -277,9 +229,6 @@ public class maintest {
 
 
 			startInsertWorkers();
-			//    try {
-			//         Thread.sleep(numMilliseconds);
-			//    } catch (InterruptedException ignore) {;}
 
 			joinInsertWorkers();
 
@@ -295,8 +244,6 @@ public class maintest {
 			
 			// Output the statistics
 
-//			System.out.println("time: " + timer.getElapsedTime());
-			
 			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), _itemsPerThread*_numInsertWorkers, _itemsPerThread*_numDeleteWorkers, grade);
 		}
 	};
@@ -499,28 +446,24 @@ public class maintest {
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
 			// which means that done.value is visible to the workers
 
-
-
 			joinInsertWorkers();
 
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
 				totalInsertCount+= insertWorkers[i]._totalPackets;
-				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
-				//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
 			}
+			
 			// Output the statistics for insert only
 			long timeOfInsertion = _insertTimer.getElapsedTime();
 
-
-
+			
 			/**********		 Deletion part  	**********/
 
 			// Start delete workers
 			startDeleteWorkers();
 
-
+			
 			// Stop delete Workers - they are responsible for leaving the queue empty
 			doneWorkers.value = true;
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
@@ -599,24 +542,10 @@ public class maintest {
 			} catch (InterruptedException ignore) {;}
 
 
-
-
-			//		boolean done = false;
-			//		while(!done )
-			//		{
-			//			System.out.println("timer: "+timer.getElapsedTime());
-			//			if(timer.getElapsedTime()>=timeOut){
-			//				done=true;
-			//			}
-			//		}
-
-
-
 			// Stop delete Workers - they are responsible for leaving the queue empty
 			doneWorkers.value = true;
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
 			// which means that done.value is visible to the workers
-
 
 			joinDeleteWorkers();
 
@@ -640,7 +569,8 @@ public class maintest {
 			{
 				totalDeleteCount+= deleteWorkers[i]._totalPackets;
 			}
-			System.out.println("");
+
+			System.out.println();
 			System.out.println("delete min count: " + totalDeleteCount);
 			System.out.println("time: " + _deleteTimer.getElapsedTime());
 			System.out.println(totalDeleteCount/_deleteTimer.getElapsedTime() + " pkts / ms");
@@ -654,6 +584,7 @@ public class maintest {
 			saveResult(_deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
 		}
 	};
+
 	public static TestBench testBench8 = new TestBench() {
 		@Override
 		public void run() {
@@ -690,20 +621,15 @@ public class maintest {
 			} catch (InterruptedException ignore) {;}
 
 
-
-
 			// stop insert workers
 			doneDispatcher.value = true;
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
 			// which means that done.value is visible to the workers
 
-
-
+			
 			joinInsertWorkers();
 
-
-
-
+			
 			// Stop delete Workers - they are responsible for leaving the queue empty
 			doneWorkers.value = true;
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
@@ -841,8 +767,6 @@ public class maintest {
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
 				totalInsertCount+= insertWorkers[i]._totalPackets;
-				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
-				//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
 			}
 
 
@@ -860,7 +784,6 @@ public class maintest {
 			joinDeleteWorkers();
 			
 			// Output the statistics for delete only
-
 
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
@@ -928,18 +851,13 @@ public class maintest {
 			} catch (InterruptedException ignore) {;}
 
 
-
-
 			// stop insert workers
 			doneDispatcher.value = true;
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
 			// which means that done.value is visible to the workers
 
 
-
 			joinInsertWorkers();
-
-
 
 
 			// Stop delete Workers - they are responsible for leaving the queue empty
@@ -1079,8 +997,6 @@ public class maintest {
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
 				totalInsertCount+= insertWorkers[i]._totalPackets;
-				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
-				//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
 			}
 
 
@@ -1099,13 +1015,11 @@ public class maintest {
 			
 			// Output the statistics for delete only
 
-
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
 				totalDeleteCount+= deleteWorkers[i]._totalPackets;
 			}
-			
 			
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -1113,13 +1027,13 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 
-			System.out.println("");
+			System.out.println();
 			System.out.println("insert count: " + totalInsertCount);
 			System.out.println("time: " + _insertTimer.getElapsedTime());
 			System.out.println(totalInsertCount/_insertTimer.getElapsedTime() + " pkts / ms");	
 
 
-			System.out.println("");
+			System.out.println();
 			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
 			System.out.println("delete min count: " + totalDeleteCount);
 			System.out.println("time: " + _deleteTimer.getElapsedTime());
@@ -1128,8 +1042,6 @@ public class maintest {
 			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
 		}
 	};
-
-
 
 	public static TestBench testBench14 = new TestBench() {
 		@Override
@@ -1163,8 +1075,6 @@ public class maintest {
 			startAllWorkers();
 
 
-
-
 			try {
 				Thread.sleep(_timeOutMilliseconds);
 			} catch (InterruptedException ignore) {;}
@@ -1176,15 +1086,17 @@ public class maintest {
 			// which means that done.value is visible to the workers
 
 
-
 			joinInsertWorkers();
 
+			
 			// Stop delete Workers - they are responsible for leaving the queue empty
 			doneWorkers.value = true;
 			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
 			// which means that done.value is visible to the workers
 
+			
 			joinDeleteWorkers();
+			
 			
 			// Output the statistics
 
@@ -1253,8 +1165,8 @@ public class maintest {
 			// which means that done.value is visible to the workers
 
 
-
 			joinInsertWorkers();
+
 			
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
@@ -1263,6 +1175,7 @@ public class maintest {
 				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
 				//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
 			}
+			
 			// Output the statistics for insert only
 			long timeOfInsertion = _insertTimer.getElapsedTime();
 
@@ -1315,7 +1228,6 @@ public class maintest {
 		}
 	};
 
-
 	public static TestBench testBench16 = new TestBench(){
 
 		@Override
@@ -1355,19 +1267,6 @@ public class maintest {
 				} catch (InterruptedException ignore) {;}
 
 
-
-
-				//		boolean done = false;
-				//		while(!done )
-				//		{
-				//			System.out.println("timer: "+timer.getElapsedTime());
-				//			if(timer.getElapsedTime()>=timeOut){
-				//				done=true;
-				//			}
-				//		}
-
-
-
 				// Stop delete Workers - they are responsible for leaving the queue empty
 				doneWorkers.value = true;
 				memFence.value = true; // memFence is a 'volatile' forcing a memory fence
@@ -1376,13 +1275,16 @@ public class maintest {
 
 				joinDeleteWorkers();
 
+				
 				// stop insert workers
 				doneDispatcher.value = true;
 				memFence.value = true; // memFence is a 'volatile' forcing a memory fence
 				// which means that done.value is visible to the workers
 
+				
 				joinInsertWorkers();
 
+				
 				// Output the statistics for the delete min
 
 				long totalCount = 0;
@@ -1390,6 +1292,7 @@ public class maintest {
 				{
 					totalCount+= deleteWorkers[i]._totalPackets;
 				}
+				
 				System.out.println("");
 				System.out.println("delete min count: " + totalCount);
 				System.out.println("time: " + _deleteTimer.getElapsedTime());
@@ -1397,11 +1300,9 @@ public class maintest {
 
 				//grade is not relevant because generating random values
 				saveResult(0, _deleteTimer.getElapsedTime(), 0, totalCount, null);
-
 			}
 		}
 	};
-
 
 	public static TestBench testBench17 = new TestBench(){
 	
@@ -1445,8 +1346,6 @@ public class maintest {
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
 				totalInsertCount+= insertWorkers[i]._totalPackets;
-				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
-				//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
 			}
 	
 	
@@ -1454,8 +1353,6 @@ public class maintest {
 	
 			// Start delete workers
 			startDeleteWorkers();
-	
-	
 	
 			joinDeleteWorkers();
 	
@@ -1466,26 +1363,19 @@ public class maintest {
 			}
 	
 	
-	
-	
 			// Output the statistics for delete only
-	
-	
 			long totalDeleteCount = _highest;
 	
-	
-			System.out.println("");
+			System.out.println();
 			System.out.println("insert count: " + totalInsertCount);
 			System.out.println("time: " + _insertTimer.getElapsedTime());
 			System.out.println(totalInsertCount/_insertTimer.getElapsedTime() + " pkts / ms");	
 	
-	
-			System.out.println("");
+			System.out.println();
 			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
 			System.out.println("delete min count: " + totalDeleteCount);
 			System.out.println("time: " + _deleteTimer.getElapsedTime());
 			System.out.println(totalDeleteCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-	
 	
 			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
 		}

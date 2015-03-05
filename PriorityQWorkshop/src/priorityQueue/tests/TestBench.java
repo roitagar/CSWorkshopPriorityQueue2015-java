@@ -83,7 +83,24 @@ public abstract class TestBench {
 		_deleteTimer.stopTimer();
 	}
 
-	public abstract void run();
+	public void runTest() {
+		// TODO: Initialize signals?
+		
+		// TODO: Initialize arrays
+		
+		// TODO: Initialize workers/threads
+		
+		run();
+		
+		// TODO: Calculate statistics/results
+		
+		// TODO: get grades
+		
+		// TODO: save result
+	}
+
+
+	protected abstract void run();
 
 	public void setQueue(IPriorityQueue queue){
 
@@ -128,6 +145,4 @@ public abstract class TestBench {
 		int[] grade;
 
 	}
-
-
 }
