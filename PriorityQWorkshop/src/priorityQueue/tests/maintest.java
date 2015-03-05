@@ -12,9 +12,10 @@ public class maintest {
 	public static void main(String[] args) {
 
 		final int skiplistHeight = 10;
-		final int insertWorkerCount = 5;
-		final int deleteWorkerCount = 5;
-		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
+		int insertWorkerCount = 5;
+		int deleteWorkerCount = 5;
+		IPriorityQueue pq = null;
+//		IPriorityQueue pq = new NaiveLockNativePriorityQueue();
 //		IPriorityQueue pq = new GlobalLockSprayListPriorityQueue(skiplistHeight);
 //		IPriorityQueue pq = new SeqSprayListPriorityQueue(skiplistHeight);
 //		IPriorityQueue pq = new TMSprayListPriorityQueue(skiplistHeight, true);
@@ -22,6 +23,63 @@ public class maintest {
 //		IPriorityQueue pq = new CoolSprayListPriorityQueue(skiplistHeight);
 
 
+		PriorityQueueFactory[] factories = {
+				new NaiveLockNativePriorityQueueFactory(),
+				new GlobalLockSprayListPriorityQueueFactory(),
+				new TMSprayListPriorityQueueWithCounterFactory(),
+				new TMSprayListPriorityQueueWithoutCounterFactory(),
+				new LockFreeSprayListPriorityQueueFactory(),
+				new CoolSprayListPriorityQueueFactory(),
+				new SeqSprayListPriorityQueueFactory(),
+		};
+		
+		TestBench[] simultaneousTests = {
+				testBench5,
+				testBench8,
+				testBench11,
+				testBench14,
+		};
+		
+		TestBench[] serialTests = {
+				testBench6,
+				testBench10,
+				testBench13,
+				testBench15,
+		};
+		
+		TestBench[][] tests = {simultaneousTests, serialTests};
+		
+		for(PriorityQueueFactory factory:factories)
+		{
+			System.out.println("Start test with " + factory.getQueueType());
+			// TODO: Add actual testing
+			int[][] inserters	= {{1, 1, 7, 4}, {1, 8}};
+			int[][] deleters	= {{1, 7, 1, 4}, {1, 8}};
+			for(int i=0;i<inserters.length;i++)
+			{
+				for(int j=0;j<inserters[0].length;j++)
+				{
+					insertWorkerCount = inserters[i][j];
+					deleteWorkerCount = deleters[i][j];
+
+					for(TestBench tb:tests[i])
+					{
+						System.out.println("Start " + i + ", " + j);
+						pq = factory.Create(skiplistHeight);
+						tb.setQueue(pq);
+						tb.setNumDeleteWorkers(deleteWorkerCount);
+						tb.setNumInsertWorkers(insertWorkerCount);
+						tb.setHighestOnQueue(100);
+						tb.setTimeOutMillisecond(20);
+						tb.run();
+						for(int k = 0;k<deleteWorkerCount;k++){
+							System.out.println(tb.getResult().grade[k]);
+						}
+					}
+				}
+			}
+		}
+		
 		//Insert & Delete min simultaneously
 		//		testBench(pq);
 
@@ -51,15 +109,15 @@ public class maintest {
 
 
 
-		TestBench tb = testBench13;
-		tb.setQueue(pq);
-		tb.setNumDeleteWorkers(deleteWorkerCount);
-		tb.setNumInsertWorkers(insertWorkerCount);
-		tb.setHighestOnQueue(100000);
-		tb.run();
-		for(int i = 0;i<deleteWorkerCount;i++){
-			System.out.println(tb.getResult().grade[i]);
-		}
+//		TestBench tb = testBench13;
+//		tb.setQueue(pq);
+//		tb.setNumDeleteWorkers(deleteWorkerCount);
+//		tb.setNumInsertWorkers(insertWorkerCount);
+//		tb.setHighestOnQueue(100000);
+//		tb.run();
+//		for(int i = 0;i<deleteWorkerCount;i++){
+//			System.out.println(tb.getResult().grade[i]);
+//		}
 
 		//		testBench17.setQueue(pq);
 		//		testBench17.setNumDeleteWorkers(5);

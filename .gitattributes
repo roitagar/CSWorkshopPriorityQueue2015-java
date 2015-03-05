@@ -22,6 +22,7 @@ PriorityQWorkshop/src/priorityQueue/news/NaiveLockNativePriorityQueue.java -text
 PriorityQWorkshop/src/priorityQueue/news/SeqSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/TMSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/serviceClass.java -text svneol=unset#text/plain
+PriorityQWorkshop/src/priorityQueue/tests/PriorityQueueFactory.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/tests/StopWatch.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/tests/TestBench.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/tests/Workers.java -text svneol=unset#text/plain

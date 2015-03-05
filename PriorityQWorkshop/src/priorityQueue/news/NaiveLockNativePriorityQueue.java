@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class NaiveLockNativePriorityQueue implements IPriorityQueue {
 	private final ReentrantLock _lock = new ReentrantLock();
 	
-	private PriorityQueue<Integer> _queue;
+	private final PriorityQueue<Integer> _queue;
 	
 	public NaiveLockNativePriorityQueue()
 	{
@@ -28,10 +28,11 @@ public class NaiveLockNativePriorityQueue implements IPriorityQueue {
 
 	@Override
 	public int deleteMin() {
-		int ret = 0;
+		int ret = Integer.MAX_VALUE;
 		_lock.lock();
 		try {
-			ret = _queue.poll();
+			if(!isEmpty())
+				ret = _queue.poll();
 		}
 		finally {
 			_lock.unlock();

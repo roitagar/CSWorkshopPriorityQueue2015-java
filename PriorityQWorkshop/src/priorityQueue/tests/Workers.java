@@ -83,7 +83,6 @@ class SimpleDeleteWorker extends GradedWorkerBase implements Runnable {
 			int result;
 
 			result = deleteMin();
-			System.out.println(result); // TODO modify
 		}
 	}
 }
@@ -120,10 +119,8 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 		while( _runs > counter)
 		{
 			result = _queue.deleteMin();
-			System.out.println(result);
 			_deleteMinList.add(result);
 			value = result + _highest;
-			System.out.println("Inserting: "+ value);
 			_queue.insert(value);
 			counter++;
 		}
@@ -251,8 +248,6 @@ class AdvancedDeleteWorker extends GradedWorkerBase implements Runnable
 
 			if(result != Integer.MAX_VALUE)
 			{
-				System.out.println(result); // TODO modify
-
 				// Count valid dequeued elements
 				_totalPackets++;
 			}
@@ -295,8 +290,6 @@ class AdvancedDeleteWorkerWithoutEmptying extends GradedWorkerBase implements Ru
 
 			if(result != Integer.MAX_VALUE)
 			{
-				System.out.println(result); // TODO modify
-
 				// Count valid dequeued elements
 				_totalPackets++;
 			}
