@@ -11,6 +11,10 @@ public abstract class TestBench {
 	protected int _highest;
 	protected int _timeOutMilliseconds;
 
+	protected Thread[] _insertWorkerThreads;
+	protected Thread[] _deleteWorkerThreads;
+	protected StopWatch _insertTimer = new StopWatch();
+	protected StopWatch _deleteTimer = new StopWatch();
 
 
 
@@ -27,6 +31,56 @@ public abstract class TestBench {
 
 	public void setTimeOutMillisecond(int timeOutMillisecond){ 
 		_timeOutMilliseconds = timeOutMillisecond;
+	}
+	
+	protected void startAllWorkers()
+	{
+		startInsertWorkers();
+		startDeleteWorkers();
+	}
+	
+	protected void startInsertWorkers()
+	{
+		_insertTimer.startTimer();
+		
+		for(int i=0;i<_numInsertWorkers;i++)
+		{
+			_insertWorkerThreads[i].start();
+		}
+	}
+	
+	protected void startDeleteWorkers()
+	{
+		_deleteTimer.startTimer();
+		
+		for(int i=0;i<_numDeleteWorkers;i++)
+		{
+			_deleteWorkerThreads[i].start();
+		}
+	}
+	
+	protected void joinInsertWorkers()
+	{
+		for(int i=0;i<_numInsertWorkers;i++)
+		{
+			try {
+				_insertWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+		
+		_insertTimer.stopTimer();
+	}
+	
+	protected void joinDeleteWorkers()
+	{
+		for(int i=0;i<_numDeleteWorkers;i++)
+		{
+			try {
+				_deleteWorkerThreads[i].join();
+			} catch (InterruptedException ignore) {;}
+		}
+		
+		_deleteTimer.stopTimer();
 	}
 
 	public abstract void run();
