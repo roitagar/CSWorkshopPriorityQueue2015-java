@@ -27,6 +27,7 @@ public class maintest {
 		};
 		
 		TestBench[] simultaneousTests = {
+				testBench2,
 				testBench5,
 				testBench8,
 				testBench11,
@@ -34,6 +35,7 @@ public class maintest {
 		};
 		
 		TestBench[] serialTests = {
+				testBench3,
 				testBench6,
 				testBench10,
 				testBench13,
@@ -45,12 +47,12 @@ public class maintest {
 		for(PriorityQueueFactory factory:factories)
 		{
 			System.out.println("Start test with " + factory.getQueueType());
-			// TODO: Add actual testing
+
 			int[][] inserters	= {{1, 1, 7, 4}, {1, 8}};
 			int[][] deleters	= {{1, 7, 1, 4}, {1, 8}};
 			for(int i=0;i<inserters.length;i++)
 			{
-				for(int j=0;j<inserters[0].length;j++)
+				for(int j=0;j<inserters[i].length;j++)
 				{
 					insertWorkerCount = inserters[i][j];
 					deleteWorkerCount = deleters[i][j];
@@ -62,12 +64,19 @@ public class maintest {
 						tb.setQueue(pq);
 						tb.setNumDeleteWorkers(deleteWorkerCount);
 						tb.setNumInsertWorkers(insertWorkerCount);
-						tb.setHighestOnQueue(100);
-						tb.setTimeOutMillisecond(20);
-						tb.runTest();
-						for(int k = 0;k<deleteWorkerCount;k++){
-							System.out.println(tb.getResult().grade[k]);
+						tb.setHighestOnQueue(32);
+						tb.setTimeOutMillisecond(10);
+						try{
+							tb.runTest();
+							for(int k = 0;k<deleteWorkerCount;k++){
+								System.out.println(tb.getResult().grade[k]);
+							}
 						}
+						catch(Exception e) {
+							// TODO: Mostly divide by zero due to short timings
+							System.out.println(e.getMessage());
+						} 
+
 					}
 				}
 			}
@@ -163,16 +172,13 @@ public class maintest {
 	}
 
 	public static TestBench testBench2 = new TestBench() {
-
-		final int _itemsPerThread = 100;
-		
 		@Override
 		public void run() {
 			SimpleInsertWorker[] insertWorkers = new SimpleInsertWorker[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			for(int i=0; i < _numInsertWorkers; i++)
 			{
-				insertWorkers[i] = new SimpleInsertWorker(_queue, _itemsPerThread*i ,_itemsPerThread);
+				insertWorkers[i] = new SimpleInsertWorker(_queue, getItemsPerThread()*i ,getItemsPerThread());
 				_insertWorkerThreads[i] = new Thread(insertWorkers[i]);
 			}
 
@@ -200,13 +206,11 @@ public class maintest {
 			// Output the statistics
 			System.out.println("time: " + _deleteTimer.getElapsedTime());
 			
-			saveResult(_deleteTimer.getElapsedTime(), _itemsPerThread*_numInsertWorkers, _itemsPerThread*_numDeleteWorkers, grade);
+			saveResult(_deleteTimer.getElapsedTime(), getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
 		}
 	};
 
 	public static TestBench testBench3 = new TestBench() {
-		final int _itemsPerThread = 100;
-
 		@Override
 		public void run() {
 			SimpleInsertWorker[] insertWorkers = new  SimpleInsertWorker[_numInsertWorkers]; 
@@ -214,7 +218,7 @@ public class maintest {
 
 			for(int i=0;i<_numInsertWorkers; i++)
 			{
-				insertWorkers[i] = new SimpleInsertWorker(_queue, 100*i ,100);
+				insertWorkers[i] = new SimpleInsertWorker(_queue, getItemsPerThread()*i ,getItemsPerThread());
 				_insertWorkerThreads[i] = new Thread(insertWorkers[i]);
 			}
 
@@ -244,89 +248,12 @@ public class maintest {
 			
 			// Output the statistics
 
-			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), _itemsPerThread*_numInsertWorkers, _itemsPerThread*_numDeleteWorkers, grade);
+			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
 		}
 	};
 
 	/**
 	 * All workers run for a constant amount of time, interleaved values inserted
-	 */
-	public static TestBench testBench4 = new TestBench() {
-		@Override
-		public void run() {
-			// Allocate and initialize locks and any signals used to marshal threads (eg. done signals)
-			PaddedPrimitiveNonVolatile<Boolean> doneDispatcher = new PaddedPrimitiveNonVolatile<Boolean>(false);
-			PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
-			PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
-
-			AdvancedInsertWorker[] insertWorkers = new  AdvancedInsertWorker[_numInsertWorkers]; 
-			_insertWorkerThreads = new Thread[_numInsertWorkers];
-
-			for(int i=0;i<_numInsertWorkers; i++)
-			{
-				// Initialize insert workers with interleaving number generators
-				insertWorkers[i] = new AdvancedInsertWorker(doneDispatcher, new InterleavingStepGenerator(i,  _numInsertWorkers), _queue);
-				_insertWorkerThreads[i] = new Thread(insertWorkers[i]);
-			}
-
-			AdvancedDeleteWorker[] deleteWorkers = new  AdvancedDeleteWorker[_numDeleteWorkers]; 
-			_deleteWorkerThreads = new Thread[_numDeleteWorkers];
-
-			for(int i=0;i<_numDeleteWorkers; i++)
-			{
-				deleteWorkers[i] = new AdvancedDeleteWorker(doneWorkers, _queue);
-				_deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
-			}
-
-
-			// Start all the workers
-			startAllWorkers();
-
-
-			try {
-				Thread.sleep(_timeOutMilliseconds);
-			} catch (InterruptedException ignore) {;}
-
-
-			// stop insert workers
-			doneDispatcher.value = true;
-			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
-			// which means that done.value is visible to the workers
-
-			joinInsertWorkers();
-
-			// Stop delete Workers - they are responsible for leaving the queue empty
-			doneWorkers.value = true;
-			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
-			// which means that done.value is visible to the workers
-
-			joinDeleteWorkers();
-			
-			//get grade of each worker
-			int[] grade = new int[_numDeleteWorkers];
-			for(int i=0; i<_numDeleteWorkers;i++){
-				grade[i]=deleteWorkers[i].getGrade();
-			}
-			
-			// Output the statistics
-
-			long totalCount = 0;
-			for(int i=0;i<_numDeleteWorkers;i++)
-			{
-				totalCount+= deleteWorkers[i]._totalPackets;
-			}
-
-			System.out.println("count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-			
-			saveResult(_deleteTimer.getElapsedTime(), totalCount, totalCount, grade);
-		}
-	};
-
-	/**
-	 * All workers run for a constant amount of time, interleaved values inserted
-	 * 
 	 */
 	public static TestBench testBench5 = new TestBench() {
 		@Override

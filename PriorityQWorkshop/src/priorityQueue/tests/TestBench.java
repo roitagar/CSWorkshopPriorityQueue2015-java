@@ -28,6 +28,11 @@ public abstract class TestBench {
 	public void setHighestOnQueue(int highest){ 
 		_highest = highest;
 	}
+	
+	public int getItemsPerThread()
+	{
+		return _highest/_numInsertWorkers;
+	}
 
 	public void setTimeOutMillisecond(int timeOutMillisecond){ 
 		_timeOutMilliseconds = timeOutMillisecond;
