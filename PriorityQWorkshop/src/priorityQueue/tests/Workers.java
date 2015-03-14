@@ -5,12 +5,22 @@ import java.util.ArrayList;
 import priorityQueue.utils.*;
 import priorityQueue.news.IPriorityQueue;
 
+abstract class InsertWorker implements Runnable{
+
+	protected int _totalPackets;
+	int totalPackets()
+	{
+		return _totalPackets;
+	}
+	
+}
+
 /**
  * 
  * @author adamelimelech
  *
  */
-class GradedWorkerBase {
+abstract class GradedWorkerBase implements Runnable{
 	IPriorityQueue _queue;
 	protected ArrayList<Integer> _values;
 
@@ -48,9 +58,13 @@ class GradedWorkerBase {
 		return grade;
 	}
 
+	public int totalPackets()
+	{
+		return _values.size();
+	}
 }
 
-class SimpleInsertWorker implements Runnable {
+class SimpleInsertWorker extends InsertWorker {
 
 	IPriorityQueue _queue;
 	int _amount;
@@ -60,11 +74,14 @@ class SimpleInsertWorker implements Runnable {
 		this._queue = queue;
 		this._from = from;
 		this._amount = amount;
+		_totalPackets = 0;
 	}
 
+	@Override
 	public void run() {
 		for (int i = _from; i < _from + _amount; i++) {
 			_queue.insert(i);
+			_totalPackets++;
 		}
 	}
 }
@@ -98,7 +115,6 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 	final IPriorityQueue _queue;
 	final int _runs;
 	final int _highest;
-	ArrayList<Integer> _deleteMinList;
 
 	public AdvancedInsertAndDelete(
 			IPriorityQueue queue, int runs, int highest)
@@ -106,7 +122,6 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 		super(queue);
 		_queue = queue;
 		_runs=runs;
-		_deleteMinList = new ArrayList<Integer>();
 		_highest = highest;
 	}
 
@@ -118,8 +133,7 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 		int value;
 		while( _runs > counter)
 		{
-			result = _queue.deleteMin();
-			_deleteMinList.add(result);
+			result = deleteMin();
 			value = result + _highest;
 			_queue.insert(value);
 			counter++;
@@ -133,7 +147,7 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 	@Override
 	public int getGrade(){
 		int grade=0;
-		for(int value : _deleteMinList){
+		for(int value : _values){
 			if(value > _highest){
 				grade++;
 			}
@@ -145,11 +159,10 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 }
 
 
-class AdvancedInsertWorker implements Runnable {
+class AdvancedInsertWorker extends InsertWorker {
 	final PaddedPrimitiveNonVolatile<Boolean> _done;
 	final INumberGenerator _generator;
 	final IPriorityQueue _queue;
-	public long _totalPackets;
 
 	public AdvancedInsertWorker(
 			PaddedPrimitiveNonVolatile<Boolean> done,
@@ -177,11 +190,10 @@ class AdvancedInsertWorker implements Runnable {
 }
 
 
-class AdvancedInsertWorkerUntilValue implements Runnable {
+class AdvancedInsertWorkerUntilValue extends InsertWorker {
 	final INumberGenerator _generator;
 	final IPriorityQueue _queue;
 	final int _finishWithValue;
-	public long _totalPackets;
 
 	public AdvancedInsertWorkerUntilValue(
 			INumberGenerator generator,
@@ -222,7 +234,6 @@ class AdvancedDeleteWorker extends GradedWorkerBase implements Runnable
 {
 	final PaddedPrimitiveNonVolatile<Boolean> _done;
 	final IPriorityQueue _queue;
-	public long _totalPackets;
 
 	public AdvancedDeleteWorker(
 			PaddedPrimitiveNonVolatile<Boolean> done,
@@ -231,7 +242,6 @@ class AdvancedDeleteWorker extends GradedWorkerBase implements Runnable
 		super(queue);
 		_done = done;
 		_queue = queue;
-		_totalPackets = 0;
 	}
 
 	@Override
@@ -246,12 +256,6 @@ class AdvancedDeleteWorker extends GradedWorkerBase implements Runnable
 
 			result = deleteMin();
 
-			if(result != Integer.MAX_VALUE)
-			{
-				// Count valid dequeued elements
-				_totalPackets++;
-			}
-
 			if(!_queue.isEmpty())
 			{
 				// if the queue is not empty, need to keep going
@@ -264,7 +268,6 @@ class AdvancedDeleteWorkerWithoutEmptying extends GradedWorkerBase implements Ru
 {
 	final PaddedPrimitiveNonVolatile<Boolean> _done;
 	final IPriorityQueue _queue;
-	public long _totalPackets;
 
 	public AdvancedDeleteWorkerWithoutEmptying(
 			PaddedPrimitiveNonVolatile<Boolean> done,
@@ -273,7 +276,6 @@ class AdvancedDeleteWorkerWithoutEmptying extends GradedWorkerBase implements Ru
 		super(queue);
 		_done = done;
 		_queue = queue;
-		_totalPackets = 0;
 	}
 
 	@Override
@@ -287,12 +289,6 @@ class AdvancedDeleteWorkerWithoutEmptying extends GradedWorkerBase implements Ru
 			int result;
 
 			result = deleteMin();
-
-			if(result != Integer.MAX_VALUE)
-			{
-				// Count valid dequeued elements
-				_totalPackets++;
-			}
 		}
 	}
 }

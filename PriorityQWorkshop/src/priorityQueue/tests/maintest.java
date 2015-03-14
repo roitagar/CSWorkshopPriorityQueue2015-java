@@ -174,7 +174,7 @@ public class maintest {
 	public static TestBench testBench2 = new TestBench() {
 		@Override
 		public void run() {
-			SimpleInsertWorker[] insertWorkers = new SimpleInsertWorker[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new SimpleInsertWorker[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			for(int i=0; i < _numInsertWorkers; i++)
 			{
@@ -213,7 +213,7 @@ public class maintest {
 	public static TestBench testBench3 = new TestBench() {
 		@Override
 		public void run() {
-			SimpleInsertWorker[] insertWorkers = new  SimpleInsertWorker[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new  SimpleInsertWorker[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 
 			for(int i=0;i<_numInsertWorkers; i++)
@@ -319,7 +319,7 @@ public class maintest {
 			long totalCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalCount+= deleteWorkers[i]._totalPackets;
+				totalCount+= deleteWorkers[i].totalPackets();
 			}
 
 			System.out.println("delete min count: " + totalCount);
@@ -378,7 +378,7 @@ public class maintest {
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
-				totalInsertCount+= insertWorkers[i]._totalPackets;
+				totalInsertCount+= insertWorkers[i].totalPackets();
 			}
 			
 			// Output the statistics for insert only
@@ -405,7 +405,7 @@ public class maintest {
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalDeleteCount+= deleteWorkers[i]._totalPackets;
+				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
 
 
@@ -488,13 +488,13 @@ public class maintest {
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
-				totalInsertCount+= insertWorkers[i]._totalPackets;
+				totalInsertCount+= insertWorkers[i].totalPackets();
 			}
 
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalDeleteCount+= deleteWorkers[i]._totalPackets;
+				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
 
 			System.out.println();
@@ -571,7 +571,7 @@ public class maintest {
 			long totalCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalCount+= deleteWorkers[i]._totalPackets;
+				totalCount+= deleteWorkers[i].totalPackets();
 			}
 			System.out.println("");
 			System.out.println("delete min count: " + totalCount);
@@ -596,7 +596,7 @@ public class maintest {
 			PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
 			PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
 
-			AdvancedInsertWorkerUntilValue[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			DecreasingStepGenerator decreasingStepGenerator = new DecreasingStepGenerator(_highest);
 			for(int i=0;i<_numInsertWorkers; i++)
@@ -634,7 +634,7 @@ public class maintest {
 			long totalCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalCount+= deleteWorkers[i]._totalPackets;
+				totalCount+= deleteWorkers[i].totalPackets();
 			}
 			System.out.println("");
 			System.out.println("delete min count: " + totalCount);
@@ -660,7 +660,7 @@ public class maintest {
 			PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
 			PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
 
-			AdvancedInsertWorkerUntilValue[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			DecreasingStepGenerator decreasingStepGenerator = new DecreasingStepGenerator(_highest);
 			for(int i=0;i<_numInsertWorkers; i++)
@@ -693,7 +693,7 @@ public class maintest {
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
-				totalInsertCount+= insertWorkers[i]._totalPackets;
+				totalInsertCount+= insertWorkers[i].totalPackets();
 			}
 
 
@@ -715,7 +715,7 @@ public class maintest {
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalDeleteCount+= deleteWorkers[i]._totalPackets;
+				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
 
 
@@ -801,7 +801,7 @@ public class maintest {
 			long totalCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalCount+= deleteWorkers[i]._totalPackets;
+				totalCount+= deleteWorkers[i].totalPackets();
 			}
 			System.out.println("");
 			System.out.println("delete min count: " + totalCount);
@@ -826,7 +826,7 @@ public class maintest {
 			PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
 			PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
 
-			AdvancedInsertWorkerUntilValue[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			IncreasingStepGenerator increasingStepGenerator = new IncreasingStepGenerator(_highest);
 			for(int i=0;i<_numInsertWorkers; i++)
@@ -864,7 +864,7 @@ public class maintest {
 			long totalCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalCount+= deleteWorkers[i]._totalPackets;
+				totalCount+= deleteWorkers[i].totalPackets();
 			}
 			System.out.println("");
 			System.out.println("delete min count: " + totalCount);
@@ -890,7 +890,7 @@ public class maintest {
 			PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
 			PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
 
-			AdvancedInsertWorkerUntilValue[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			IncreasingStepGenerator increasingStepGenerator = new IncreasingStepGenerator(_highest);
 			for(int i=0;i<_numInsertWorkers; i++)
@@ -923,7 +923,7 @@ public class maintest {
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
-				totalInsertCount+= insertWorkers[i]._totalPackets;
+				totalInsertCount+= insertWorkers[i].totalPackets();
 			}
 
 
@@ -945,7 +945,7 @@ public class maintest {
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalDeleteCount+= deleteWorkers[i]._totalPackets;
+				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
 			
 			//get grade of each worker
@@ -1030,7 +1030,7 @@ public class maintest {
 			long totalCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalCount+= deleteWorkers[i]._totalPackets;
+				totalCount+= deleteWorkers[i].totalPackets();
 			}
 			System.out.println("");
 			System.out.println("delete min count: " + totalCount);
@@ -1098,9 +1098,9 @@ public class maintest {
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
-				totalInsertCount+= insertWorkers[i]._totalPackets;
-				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i]._totalPackets);
-				//			System.out.println(insertWorkers[i]._totalPackets/timer.getElapsedTime() + " pkts / ms");	
+				totalInsertCount+= insertWorkers[i].totalPackets();
+				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i].totalPackets());
+				//			System.out.println(insertWorkers[i].totalPackets()/timer.getElapsedTime() + " pkts / ms");	
 			}
 			
 			// Output the statistics for insert only
@@ -1128,7 +1128,7 @@ public class maintest {
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
-				totalDeleteCount+= deleteWorkers[i]._totalPackets;
+				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
 
 
@@ -1217,7 +1217,7 @@ public class maintest {
 				long totalCount = 0;
 				for(int i=0;i<_numDeleteWorkers;i++)
 				{
-					totalCount+= deleteWorkers[i]._totalPackets;
+					totalCount+= deleteWorkers[i].totalPackets();
 				}
 				
 				System.out.println("");
@@ -1238,7 +1238,7 @@ public class maintest {
 	
 			// Allocate and initialize locks and any signals used to marshal threads (eg. done signals)
 	
-			AdvancedInsertWorkerUntilValue[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
+			InsertWorker[] insertWorkers = new  AdvancedInsertWorkerUntilValue[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			IncreasingStepGenerator increasingStepGenerator = new IncreasingStepGenerator(_highest);
 			int runs = _highest/_numDeleteWorkers;
@@ -1272,7 +1272,7 @@ public class maintest {
 			long totalInsertCount = 0;
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
-				totalInsertCount+= insertWorkers[i]._totalPackets;
+				totalInsertCount+= insertWorkers[i].totalPackets();
 			}
 	
 	

@@ -237,8 +237,10 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					_head.next[level].set(highest.next[level].getReference(), false);
 				}
 				
+				_lock2.writeLock().lock(); // shortly block all inserters to change highetNodeKey, avoids race / NullPointerException
 				highetNodeKey = null; // TODO: lock guard (finally)? is this stage good?
 
+				_lock2.writeLock().unlock();
 				_lock3.writeLock().unlock(); // no more messing around with the skiplist, all inserts can go on
 				
 				/*Now  - logically delete each alive node in the group deleted and add it to the elimination array */
