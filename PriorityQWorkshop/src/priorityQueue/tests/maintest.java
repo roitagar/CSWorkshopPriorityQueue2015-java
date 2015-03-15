@@ -1,5 +1,8 @@
 package priorityQueue.tests;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import priorityQueue.news.*;
 import priorityQueue.utils.*;
 
@@ -12,8 +15,11 @@ public class maintest {
 	public static void main(String[] args) {
 
 		final int skiplistHeight = 10;
-		int insertWorkerCount = 5;
-		int deleteWorkerCount = 5;
+		final int highestOnQueue = 100000;
+		final int timeOutMillisecond = 1000;
+		
+		int insertWorkerCount;
+		int deleteWorkerCount;
 		IPriorityQueue pq = null;
 
 		PriorityQueueFactory[] factories = {
@@ -23,7 +29,7 @@ public class maintest {
 				new TMSprayListPriorityQueueWithoutCounterFactory(),
 				new LockFreeSprayListPriorityQueueFactory(),
 				new CoolSprayListPriorityQueueFactory(),
-				new SeqSprayListPriorityQueueFactory(),
+//				new SeqSprayListPriorityQueueFactory(), // TODO: Remove? this does not support multithreading
 		};
 		
 		TestBench[] simultaneousTests = {
@@ -32,6 +38,8 @@ public class maintest {
 				testBench8,
 				testBench11,
 				testBench14,
+				testBench7,
+				testBench16,
 		};
 		
 		TestBench[] serialTests = {
@@ -40,43 +48,81 @@ public class maintest {
 				testBench10,
 				testBench13,
 				testBench15,
+				testBench17,
 		};
 		
 		TestBench[][] tests = {simultaneousTests, serialTests};
 		
+		List<String> result;
+		
 		for(PriorityQueueFactory factory:factories)
 		{
-			System.out.println("Start test with " + factory.getQueueType());
-
-			int[][] inserters	= {{1, 1, 7, 4}, {1, 8}};
-			int[][] deleters	= {{1, 7, 1, 4}, {1, 8}};
+			int[][] inserters	= {{1, 2, 3, 4, 1, 7, 1, 3}, {1, 2, 3, 4, 5, 6, 7, 8}};
+			int[][] deleters	= {{1, 2, 3, 4, 7, 1, 3, 1}, {1, 2, 3, 4, 5, 6, 7, 8}};
 			for(int i=0;i<inserters.length;i++)
 			{
+				// Print headers // TODO: Remove?
+				TestUtils.saveResult(new String[] {
+						"Queue type", 
+						"Set",
+						"Threads",
+						"Test",
+						// TODO: Test name?
+						"Iwrkr",
+						"Dwrkr",
+						"Icnt",
+						"Itime",
+						"Dcnt",
+						"Dtime",
+						"t-out",
+						"highest",
+						"height",
+						"Grades"});
+				
 				for(int j=0;j<inserters[i].length;j++)
 				{
 					insertWorkerCount = inserters[i][j];
 					deleteWorkerCount = deleters[i][j];
 
-					for(TestBench tb:tests[i])
+					for(int k=0;k<tests[i].length;k++)
 					{
-						System.out.println("Start " + i + ", " + j);
+						TestBench tb = tests[i][k];
 						pq = factory.Create(skiplistHeight);
 						tb.setQueue(pq);
 						tb.setNumDeleteWorkers(deleteWorkerCount);
 						tb.setNumInsertWorkers(insertWorkerCount);
-						tb.setHighestOnQueue(32);
-						tb.setTimeOutMillisecond(10);
-						try{
-							tb.runTest();
-							for(int k = 0;k<deleteWorkerCount;k++){
-								System.out.println(tb.getResult().grade[k]);
+						tb.setHighestOnQueue(highestOnQueue);
+						tb.setTimeOutMillisecond(timeOutMillisecond);
+
+						tb.runTest();
+
+						// prepare result output
+						result = new ArrayList<String>();
+
+						result.add(factory.getQueueType()); // queue type
+						result.add(""+i); // Test series index
+						result.add(""+j); // Thread composition index
+						result.add(""+k); // Test index
+						// TODO: Test name?
+						result.add(""+insertWorkerCount); // Insert worker count
+						result.add(""+deleteWorkerCount); // Delete worker count
+						result.add(""+tb.getResult().insertCount); // Insert count
+						result.add(""+tb.getResult().insertTime); // Insert time
+						result.add(""+tb.getResult().deleteCount); // Delete count
+						result.add(""+tb.getResult().deleteTime); // Delete time
+						result.add(""+timeOutMillisecond); // Set timeout
+						result.add(""+highestOnQueue); // Highest setting
+						result.add(""+skiplistHeight); // Skiplist height
+
+						// Grade
+						if(tb.getResult().grade != null) {
+							for(int l = 0;l<deleteWorkerCount;l++){
+								result.add(""+tb.getResult().grade[l]);
 							}
 						}
-						catch(Exception e) {
-							// TODO: Mostly divide by zero due to short timings
-							System.out.println(e.getMessage());
-						} 
 
+						// Write result to output
+						TestUtils.saveResult(result.toArray(new String[0]));
 					}
 				}
 			}
@@ -203,10 +249,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			// Output the statistics
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			
-			saveResult(_deleteTimer.getElapsedTime(), getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
+			saveResult(getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
 		}
 	};
 
@@ -248,7 +291,7 @@ public class maintest {
 			
 			// Output the statistics
 
-			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
+			saveResult(getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
 		}
 	};
 
@@ -322,11 +365,7 @@ public class maintest {
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
 
-			System.out.println("delete min count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-			
-			saveResult(_deleteTimer.getElapsedTime(), totalCount, totalCount, grade);
+			saveResult(totalCount, totalCount, grade);
 		}
 	};
 
@@ -381,10 +420,6 @@ public class maintest {
 				totalInsertCount+= insertWorkers[i].totalPackets();
 			}
 			
-			// Output the statistics for insert only
-			long timeOfInsertion = _insertTimer.getElapsedTime();
-
-			
 			/**********		 Deletion part  	**********/
 
 			// Start delete workers
@@ -399,28 +434,11 @@ public class maintest {
 			joinDeleteWorkers();
 			
 			// Output the statistics for delete only
-			long timeOfDeletion = _deleteTimer.getElapsedTime();
-
-
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
 				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
-
-
-			System.out.println("");
-			System.out.println("Num of insert workers: "+ _numInsertWorkers );
-			System.out.println("insert count: " + totalInsertCount);
-			System.out.println("time: " + timeOfInsertion);
-			System.out.println(totalInsertCount/timeOfInsertion + " pkts / ms");	
-
-
-			System.out.println("");
-			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
-			System.out.println("delete min count: " + totalDeleteCount);
-			System.out.println("time: " + timeOfDeletion);
-			System.out.println(totalDeleteCount/timeOfDeletion + " pkts / ms");
 
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -428,7 +446,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(timeOfInsertion, timeOfDeletion, totalInsertCount, totalDeleteCount, grade);
+			saveResult(totalInsertCount, totalDeleteCount, grade);
 		}
 	};
 
@@ -497,18 +515,13 @@ public class maintest {
 				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
 
-			System.out.println();
-			System.out.println("delete min count: " + totalDeleteCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalDeleteCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
 			for(int i=0; i<_numDeleteWorkers;i++){
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(_deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
+			saveResult(totalInsertCount, totalDeleteCount, grade);
 		}
 	};
 
@@ -573,10 +586,6 @@ public class maintest {
 			{
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
-			System.out.println("");
-			System.out.println("delete min count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
 
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -584,7 +593,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(_deleteTimer.getElapsedTime(), totalCount, totalCount, grade);
+			saveResult(totalCount, totalCount, grade);
 		}
 	};
 
@@ -636,18 +645,14 @@ public class maintest {
 			{
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
-			System.out.println("");
-			System.out.println("delete min count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-			
+
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
 			for(int i=0; i<_numDeleteWorkers;i++){
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(_deleteTimer.getElapsedTime(), _highest, totalCount, grade);
+			saveResult(_highest, totalCount, grade);
 		}
 	};
 
@@ -717,20 +722,6 @@ public class maintest {
 			{
 				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
-
-
-			System.out.println("");
-			System.out.println("Num of insert workers: "+ _numInsertWorkers );
-			System.out.println("insert count: " + totalInsertCount);
-			System.out.println("time: " + _insertTimer.getElapsedTime());
-			System.out.println(totalInsertCount/_insertTimer.getElapsedTime() + " pkts / ms");	
-
-
-			System.out.println("");
-			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
-			System.out.println("delete min count: " + totalDeleteCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalDeleteCount/_deleteTimer.getElapsedTime() + " pkts / ms");
 			
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -738,7 +729,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
+			saveResult(totalInsertCount, totalDeleteCount, grade);
 		}
 	};
 
@@ -803,11 +794,6 @@ public class maintest {
 			{
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
-			System.out.println("");
-			System.out.println("delete min count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-
 			
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -815,7 +801,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(_deleteTimer.getElapsedTime(), totalCount, totalCount, grade);
+			saveResult(totalCount, totalCount, grade);
 		}
 	};
 
@@ -866,10 +852,6 @@ public class maintest {
 			{
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
-			System.out.println("");
-			System.out.println("delete min count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
 			
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -877,7 +859,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(_deleteTimer.getElapsedTime(), _highest, totalCount, grade);
+			saveResult(_highest, totalCount, grade);
 		}
 	};
 
@@ -954,19 +936,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 
-			System.out.println();
-			System.out.println("insert count: " + totalInsertCount);
-			System.out.println("time: " + _insertTimer.getElapsedTime());
-			System.out.println(totalInsertCount/_insertTimer.getElapsedTime() + " pkts / ms");	
-
-
-			System.out.println();
-			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
-			System.out.println("delete min count: " + totalDeleteCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalDeleteCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-			
-			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
+			saveResult(totalInsertCount, totalDeleteCount, grade);
 		}
 	};
 
@@ -1032,18 +1002,9 @@ public class maintest {
 			{
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
-			System.out.println("");
-			System.out.println("delete min count: " + totalCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
 			
-			//get grade of each worker
-			int[] grade = new int[_numDeleteWorkers];
-			for(int i=0; i<_numDeleteWorkers;i++){
-				grade[i]=deleteWorkers[i].getGrade();
-			}
-			
-			saveResult(_deleteTimer.getElapsedTime(), totalCount, totalCount, grade);
+			// grade is not relevant because generating random values
+			saveResult(totalCount, totalCount, null);
 		}
 	};
 
@@ -1076,7 +1037,6 @@ public class maintest {
 
 			/**********		 Insertion part	**********/
 
-			System.out.println("Starting insert...");
 			// Start insert workers
 			startInsertWorkers();
 
@@ -1099,15 +1059,8 @@ public class maintest {
 			for(int i=0;i<_numInsertWorkers;i++)
 			{
 				totalInsertCount+= insertWorkers[i].totalPackets();
-				//			System.out.println("insert (thread "+i+") count: " + insertWorkers[i].totalPackets());
-				//			System.out.println(insertWorkers[i].totalPackets()/timer.getElapsedTime() + " pkts / ms");	
 			}
 			
-			// Output the statistics for insert only
-			long timeOfInsertion = _insertTimer.getElapsedTime();
-
-
-
 			/**********		 Deletion part  	**********/
 
 			// Start delete workers
@@ -1122,28 +1075,11 @@ public class maintest {
 			joinDeleteWorkers();
 			
 			// Output the statistics for delete only
-			long timeOfDeletion = _deleteTimer.getElapsedTime();
-
-
 			long totalDeleteCount = 0;
 			for(int i=0;i<_numDeleteWorkers;i++)
 			{
 				totalDeleteCount+= deleteWorkers[i].totalPackets();
 			}
-
-
-			System.out.println("");
-			System.out.println("Num of insert workers: "+ _numInsertWorkers );
-			System.out.println("insert count: " + totalInsertCount);
-			System.out.println("time: " + timeOfInsertion);
-			System.out.println(totalInsertCount/timeOfInsertion + " pkts / ms");	
-
-
-			System.out.println("");
-			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
-			System.out.println("delete min count: " + totalDeleteCount);
-			System.out.println("time: " + timeOfDeletion);
-			System.out.println(totalDeleteCount/timeOfDeletion + " pkts / ms");
 			
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
@@ -1151,7 +1087,7 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(timeOfInsertion, timeOfDeletion, totalInsertCount, totalDeleteCount, grade);
+			saveResult(totalInsertCount, totalDeleteCount, grade);
 		}
 	};
 
@@ -1220,13 +1156,8 @@ public class maintest {
 					totalCount+= deleteWorkers[i].totalPackets();
 				}
 				
-				System.out.println("");
-				System.out.println("delete min count: " + totalCount);
-				System.out.println("time: " + _deleteTimer.getElapsedTime());
-				System.out.println(totalCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-
-				//grade is not relevant because generating random values
-				saveResult(0, _deleteTimer.getElapsedTime(), 0, totalCount, null);
+				// grade is not relevant because generating random values
+				saveResult(0, totalCount, null);
 			}
 		}
 	};
@@ -1293,18 +1224,7 @@ public class maintest {
 			// Output the statistics for delete only
 			long totalDeleteCount = _highest;
 	
-			System.out.println();
-			System.out.println("insert count: " + totalInsertCount);
-			System.out.println("time: " + _insertTimer.getElapsedTime());
-			System.out.println(totalInsertCount/_insertTimer.getElapsedTime() + " pkts / ms");	
-	
-			System.out.println();
-			System.out.println("Num of delete workers: "+ _numDeleteWorkers );
-			System.out.println("delete min count: " + totalDeleteCount);
-			System.out.println("time: " + _deleteTimer.getElapsedTime());
-			System.out.println(totalDeleteCount/_deleteTimer.getElapsedTime() + " pkts / ms");
-	
-			saveResult(_insertTimer.getElapsedTime(), _deleteTimer.getElapsedTime(), totalInsertCount, totalDeleteCount, grade);
+			saveResult(totalInsertCount, totalDeleteCount, grade);
 		}
 	};
 

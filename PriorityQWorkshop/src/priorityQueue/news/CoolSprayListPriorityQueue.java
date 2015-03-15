@@ -18,7 +18,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	private ReadWriteLock _lock1; // during the entire cleanup - allows only one cleaner
 	private ReadWriteLock _lock2; // during delete-group selection - blocks all inserters
 	private ReadWriteLock _lock3; // during delete-group disconnection - blocks low inserters
-	volatile Integer highetNodeKey;
+	volatile Integer highestNodeKey;
 	
 	public CoolSprayListPriorityQueue(int maxAllowedHeight) {
 		_maxAllowedHeight = maxAllowedHeight;
@@ -29,7 +29,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		_lock1 = new ReentrantReadWriteLock(true);
 		_lock2 = new ReentrantReadWriteLock(true);
 		_lock3 = new ReentrantReadWriteLock(true);
-		highetNodeKey = null;
+		highestNodeKey = null;
 		
 		for(int i=0;i<=_maxAllowedHeight;i++)
 		{
@@ -76,7 +76,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		// Don't interfere with deciding a delete-group
 		_lock2.readLock().lock();
 		/*in this case we have to wait */
-		if (highetNodeKey != null && value <highetNodeKey){
+		if (highestNodeKey != null && value <highestNodeKey){
 			crap = true;
 			// Don't interfere with disconnecting a delete-group
 			_lock3.readLock().lock();
@@ -207,19 +207,17 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					curr = curr.next[0].getReference();
 				}
 				
+				highestNodeKey = highest.value;
+				
 				_lock2.writeLock().unlock(); // high-valued inserts can go on
 				
 				if(firstNode == _tail)
 				{
-					System.out.println("Clean none"); // TODO: Remove print
 					// No nodes to remove
+					highestNodeKey = null;
 					_lock3.writeLock().unlock();
 					return false;
 				}
-				
-				System.out.println("Clean " + actualLen); // TODO: Remove print
-				
-				highetNodeKey = highest.value; // TODO: lock guard (finally)?
 				
 				/*Now you have a range that you want to delete  mark the highest node's markable reference,
 				 * so other threads cannot add a node after it */
@@ -237,11 +235,11 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					_head.next[level].set(highest.next[level].getReference(), false);
 				}
 				
+				_lock3.writeLock().unlock(); // no more messing around with the skiplist, all inserts can go on
 				_lock2.writeLock().lock(); // shortly block all inserters to change highetNodeKey, avoids race / NullPointerException
-				highetNodeKey = null; // TODO: lock guard (finally)? is this stage good?
+				highestNodeKey = null;
 
 				_lock2.writeLock().unlock();
-				_lock3.writeLock().unlock(); // no more messing around with the skiplist, all inserts can go on
 				
 				/*Now  - logically delete each alive node in the group deleted and add it to the elimination array */
 				curr = firstNode;
@@ -343,8 +341,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				CoolSprayListNode node = _elimArray.getNode();
 				if(node != null)
 				{
-					System.out.println("Eliminated!"); // TODO: Remove print
-					
 					// Successful elimination
 					result = node.value;
 					break;
