@@ -51,7 +51,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 
 	@Override
 	public boolean insert(int value) {
-		int topLevel = serviceClass.randomLevel(_maxAllowedHeight); //TODO: Check if static method is ok
+		int topLevel = serviceClass.randomLevel(_maxAllowedHeight);
 
 		SeqSprayListNode[] preds = new SeqSprayListNode[_maxAllowedHeight+1];
 		SeqSprayListNode[] succs = new SeqSprayListNode[_maxAllowedHeight+1];

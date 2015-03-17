@@ -52,6 +52,13 @@ class CoolSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	}
 }
 
+class LazyLockSparyListPriorityQueueFactory extends PriorityQueueFactory {
+	@Override
+	IPriorityQueue Create(int skiplistHeight) {
+		return new LazyLockSparyListPriorityQueue(skiplistHeight);
+	}
+}
+
 // TODO: is this required?
 class SeqSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	@Override

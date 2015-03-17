@@ -69,7 +69,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	public boolean insert(int value) {
 		_threads.getAndIncrement();
 		int topLevel = serviceClass.randomLevel(_maxAllowedHeight);
-		boolean crap = false;
+		boolean shouldReleaseLock3 = false;
 		CoolSprayListNode[] preds = new CoolSprayListNode[_maxAllowedHeight+1];
 		CoolSprayListNode[] succs = new CoolSprayListNode[_maxAllowedHeight+1];
 
@@ -77,7 +77,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		_lock2.readLock().lock();
 		/*in this case we have to wait */
 		if (highestNodeKey != null && value <highestNodeKey){
-			crap = true;
+			shouldReleaseLock3 = true;
 			// Don't interfere with disconnecting a delete-group
 			_lock3.readLock().lock();
 
@@ -147,7 +147,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 		}
 		finally {
-			if(crap)
+			if(shouldReleaseLock3)
 			{
 				_lock3.readLock().unlock();
 			}
@@ -175,7 +175,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				_lock3.writeLock().lock();
 				
 				/*Determine the max number of Healthy element you want to traverse */
-				int numOfHealtyNodes = 5; //TODO: Determine it for a variable
+				int numOfHealtyNodes = 10; //TODO: Determine it for a variable
 				
 				
 				
@@ -209,15 +209,16 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				
 				highestNodeKey = highest.value;
 				
-				_lock2.writeLock().unlock(); // high-valued inserts can go on
-				
 				if(firstNode == _tail)
 				{
 					// No nodes to remove
 					highestNodeKey = null;
+					_lock2.writeLock().unlock();
 					_lock3.writeLock().unlock();
 					return false;
 				}
+				
+				_lock2.writeLock().unlock(); // high-valued inserts can go on
 				
 				/*Now you have a range that you want to delete  mark the highest node's markable reference,
 				 * so other threads cannot add a node after it */
@@ -349,7 +350,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		
 			// Attempt cleanup
 			int tmp = serviceClass.randomStep(100);
-			if(tmp < 3 /* TODO: cleanup conditions? */)
+			if(tmp < 7 /* TODO: cleanup conditions? */)
 			{
 				if(clean())
 				{
@@ -360,8 +361,9 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			
 			// Normal spray
 			int p = _threads.get();
-			int H = Math.min((int) Math.log(p)/*+K*/, _maxAllowedHeight);
-			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
+			int K = 2;
+			int H = Math.min((int) Math.log(p)+K, _maxAllowedHeight);
+			int L = (int) (/*M * */ Math.pow(Math.log(p),3))+K;
 			int D = 1; /* Math.max(1, log(log(p))) */
 			result = spray(H,L,D);
 			

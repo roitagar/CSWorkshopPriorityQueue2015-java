@@ -333,10 +333,8 @@ public class LazyLockSparyListPriorityQueue implements IPriorityQueue {
 			//System.out.println("Thread " + tid + ": After spray got "+ result);
 			if(result == Integer.MAX_VALUE)
 			{
-				if(isEmpty())
-					return result;
-				else
-					retry = true;
+				// if we got tail's value, the list might be empty
+				retry = !isEmpty();
 			}
 			else
 			{

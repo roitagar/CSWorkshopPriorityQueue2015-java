@@ -29,6 +29,7 @@ public class maintest {
 				new TMSprayListPriorityQueueWithoutCounterFactory(),
 				new LockFreeSprayListPriorityQueueFactory(),
 				new CoolSprayListPriorityQueueFactory(),
+				new LazyLockSparyListPriorityQueueFactory(),
 //				new SeqSprayListPriorityQueueFactory(), // TODO: Remove? this does not support multithreading
 		};
 		
