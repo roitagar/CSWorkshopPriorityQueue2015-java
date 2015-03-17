@@ -598,14 +598,9 @@ public class maintest {
 			{
 				totalCount+= deleteWorkers[i].totalPackets();
 			}
-
-			//get grade of each worker
-			int[] grade = new int[_numDeleteWorkers];
-			for(int i=0; i<_numDeleteWorkers;i++){
-				grade[i]=deleteWorkers[i].getGrade();
-			}
 			
-			saveResult(totalCount, totalCount, grade);
+			// grade is irrelevant due to decreasing insertion order
+			saveResult(totalCount, totalCount, null);
 		}
 	};
 

@@ -54,6 +54,20 @@ abstract class GradedWorkerBase implements Runnable{
 //				}
 //			}
 //		}
+		
+		int old = Integer.MIN_VALUE;
+		
+		for(int i=0;i<_values.size();i++)
+		{
+			int value = _values.get(i);
+			if(old>value)
+			{
+				// out of order, count a bad point
+				grade++;
+			}
+			
+			old = value;
+		}
 
 		return grade;
 	}
