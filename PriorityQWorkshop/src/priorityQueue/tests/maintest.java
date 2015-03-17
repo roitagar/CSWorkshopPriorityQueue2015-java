@@ -249,7 +249,13 @@ public class maintest {
 				grade[i]=deleteWorkers[i].getGrade();
 			}
 			
-			saveResult(getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
+			long totalCount = 0;
+			for(int i=0;i<_numDeleteWorkers;i++)
+			{
+				totalCount+= deleteWorkers[i].totalPackets();
+			}
+			
+			saveResult(getItemsPerThread()*_numInsertWorkers, totalCount, grade);
 		}
 	};
 
@@ -290,8 +296,14 @@ public class maintest {
 			}
 			
 			// Output the statistics
+			
+			long totalCount = 0;
+			for(int i=0;i<_numDeleteWorkers;i++)
+			{
+				totalCount+= deleteWorkers[i].totalPackets();
+			}
 
-			saveResult(getItemsPerThread()*_numInsertWorkers, getItemsPerThread()*_numDeleteWorkers, grade);
+			saveResult(getItemsPerThread()*_numInsertWorkers, totalCount, grade);
 		}
 	};
 
