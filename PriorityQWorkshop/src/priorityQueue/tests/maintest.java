@@ -16,7 +16,7 @@ public class maintest {
 
 		final int skiplistHeight = 10;
 		final int highestOnQueue = 100000;
-		final int timeOutMillisecond = 1000;
+		final int timeOutMillisecond = 500;
 		
 		int insertWorkerCount;
 		int deleteWorkerCount;

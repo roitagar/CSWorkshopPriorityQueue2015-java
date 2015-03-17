@@ -66,10 +66,16 @@ public abstract class TestBench {
 	
 	protected void joinInsertWorkers()
 	{
+		boolean kicked = false;
 		for(int i=0;i<_numInsertWorkers;i++)
 		{
 			try {
-				_insertWorkerThreads[i].join();
+				_insertWorkerThreads[i].join(kicked ? 1000 : 50000);
+				if(_insertWorkerThreads[i].isAlive())
+				{
+					_insertWorkerThreads[i].interrupt();
+					kicked = true;
+				}
 			} catch (InterruptedException ignore) {;}
 		}
 		
@@ -78,10 +84,16 @@ public abstract class TestBench {
 	
 	protected void joinDeleteWorkers()
 	{
+		boolean kicked = false;
 		for(int i=0;i<_numDeleteWorkers;i++)
 		{
 			try {
-				_deleteWorkerThreads[i].join();
+				_deleteWorkerThreads[i].join(kicked ? 1000 : 50000);
+				if(_deleteWorkerThreads[i].isAlive())
+				{
+					_deleteWorkerThreads[i].interrupt();
+					kicked = true;
+				}
 			} catch (InterruptedException ignore) {;}
 		}
 		

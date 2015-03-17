@@ -47,13 +47,13 @@ abstract class GradedWorkerBase implements Runnable{
 		int grade=0;
 		
 		//check with bubble sort the goodness of the del. min
-		for(int i=0;i<_values.size()-1;i++){
-			for(int j=i;j<_values.size();j++){
-				if(_values.get(i)>_values.get(j)){
-					grade++;
-				}
-			}
-		}
+//		for(int i=0;i<_values.size()-1;i++){
+//			for(int j=i;j<_values.size();j++){
+//				if(_values.get(i)>_values.get(j)){
+//					grade++;
+//				}
+//			}
+//		}
 
 		return grade;
 	}
