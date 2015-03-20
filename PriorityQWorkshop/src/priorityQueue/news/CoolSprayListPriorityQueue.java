@@ -75,35 +75,39 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 		// Don't interfere with deciding a delete-group
 		_lock2.readLock().lock();
-		/*in this case we have to wait */
-		if (highestNodeKey != null && value <highestNodeKey){
-			shouldReleaseLock3 = true;
-			// Don't interfere with disconnecting a delete-group
-			_lock3.readLock().lock();
-
-			// TODO: maybe instead of waiting, join the elimination array being built right now?
-			//		 not sure it's a good idea, since it requires complex synchronization with the cleaner thread
-		}
-
-		// TODO: check if there are elimination items smaller than my item? maybe after inserting?
-		//		 if so, eliminate then back to the list, to preserve linearizability
-
 		try {
+
+			/*in this case we have to wait */
+			if (highestNodeKey != null && value <highestNodeKey){
+				shouldReleaseLock3 = true;
+				// Don't interfere with disconnecting a delete-group
+				_lock3.readLock().lock();
+
+				// TODO: maybe instead of waiting, join the elimination array being built right now?
+				//		 not sure it's a good idea, since it requires complex synchronization with the cleaner thread
+			}
+
+			// TODO: check if there are elimination items smaller than my item? maybe after inserting?
+			//		 if so, eliminate then back to the list, to preserve linearizability
+
 			while(true)
 			{
 				NodeStatus status = find(value, preds, succs);
 
 				if(status == NodeStatus.FOUND) {
 					/*linearization point of unsuccessful insertion */
-					_threads.getAndDecrement();
 					return false;
 				}
 
 				else if (status == NodeStatus.MARKED) {
 					/*Node is physically exist and only logically deleted - unmarked it */
 					boolean IRevivedIt = succs[0].unmark();
-					_threads.getAndDecrement();
 					return IRevivedIt;
+				}
+				else if (_elimArray.contains(value))
+				{
+					// Node exists, but is pending deletion in the elimination array
+					return false;
 				}
 
 				/*The item is not in the set (both physically and logically - so add it */
@@ -146,7 +150,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 							find(value, preds, succs);	 
 						}
 					}
-					_threads.getAndDecrement();
 					return true;
 				}
 
@@ -159,6 +162,8 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				_lock3.readLock().unlock();
 			}
 			_lock2.readLock().unlock();
+
+			_threads.getAndDecrement();
 		}
 	}
 
@@ -454,11 +459,16 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		}
 		
 		public CoolSprayListNode getNode() {
+			// get token
 			int i = nextNode.getAndDecrement() - 1;
 			if (i<0) {
 				return null;
 			}
+			
+			// get value
 			CoolSprayListNode result = arr[i];
+			
+			// inform completion, "release" the array
 			pendingCompletion.getAndDecrement();
 			return result;
 		}
@@ -470,6 +480,23 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		public boolean completed()
 		{
 			return pendingCompletion.get() == 0;
+		}
+		
+		public boolean contains(int value)
+		{
+			int i;
+			
+			// go over values that were not removed yet
+			for(i=0; i< nextNode.get();i++)
+			{
+				// if value found
+				if(arr[i].value == value)
+				{
+					return true;
+				}
+			}
+			
+			return false;
 		}
 	}
 	
