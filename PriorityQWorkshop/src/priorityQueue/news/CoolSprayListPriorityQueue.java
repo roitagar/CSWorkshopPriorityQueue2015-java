@@ -161,117 +161,119 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			_lock2.readLock().unlock();
 		}
 	}
-	
+
 	protected boolean clean() {
 		// Allow only a single cleaner, but don't block
-		if (_lock1.writeLock().tryLock()) {
-			try {
-				
-				// Coherency check:
-				if(_elimArray.hasNodes())
-				{
-					// Someone else performed cleanup and I missed it, go back to empty the elimination array
-					return false;
-				}
-				
-				// Block inserters
-				_lock2.writeLock().lock();
-				_lock3.writeLock().lock();
-				
-				/* Determine the max number of Healthy element you want to traverse */
-				int numOfHealtyNodes = 10; // TODO: Determine it for a variable
-				
-				/* Create an Elimination Array in this size */
-				NodesEliminationArray newElimArray = new NodesEliminationArray(numOfHealtyNodes);
-				
-				/* Traverse the list in the bottom level look for healthy element, and find an optimal group */
-				int foundHealthyNodes = 0;
-				int maxLevelFound = 0;
-				int len = 0; // TODO: Remove
-				int actualLen = 0; // TODO: Remove
-				CoolSprayListNode firstNode = _head.next[0].getReference();
-				CoolSprayListNode curr = firstNode;
-				CoolSprayListNode highest = curr;
-				while (foundHealthyNodes < numOfHealtyNodes && curr != _tail) {
-					len++;
-					if (!curr.isMarked()) {
-						foundHealthyNodes +=1;
-					}
-					/* find the last highest node in the ragne */
-					if (maxLevelFound <= curr.topLevel()) {
-						highest = curr;
-						maxLevelFound = curr.topLevel();
-						actualLen = len;
-						
-						// TODO: Compare live-dead element ratios?
-					}
-					curr = curr.next[0].getReference();
-				}
-				
-				highestNodeKey = highest.value;
-				
-				if(firstNode == _tail)
-				{
-					// No nodes to remove
-					highestNodeKey = null;
-					_lock2.writeLock().unlock();
-					_lock3.writeLock().unlock();
-					return false;
-				}
-				
-				_lock2.writeLock().unlock(); // high-valued inserts can go on
-				
-				// Now you have a range that you want to delete. mark the highest node's markable reference in all levels,
-				// so other threads cannot add a node after it.
-				// Starting the marking process from the bottom, blocks new inserts from interrupting.
-				for (int level= 0; level <= highest.topLevel(); level++) {
-					while (true) {
-						CoolSprayListNode succ = highest.next[level].getReference();
-						if (highest.next[level].attemptMark(succ, true)) {
-							break;
-						}
-					}
-				}
-				/* Now - nobody can connect a node after the highest node - in the deletion list - connect the head*/
-				for (int level= 0; level <= highest.topLevel(); level++) {
-					_head.next[level].set(highest.next[level].getReference(), false);
-				}
-				
-				_lock3.writeLock().unlock(); // no more messing around with the skiplist, all inserts can go on
-				_lock2.writeLock().lock(); // shortly block all inserters to change highetNodeKey, avoids race / NullPointerException
-				highestNodeKey = null;
-
-				_lock2.writeLock().unlock();
-				
-				/* Now  - logically delete each alive node in the group deleted and add it to the elimination array */
-				curr = firstNode;
-				while (curr != highest){
-					if (!curr.isMarked()) {
-						/*If I marked it - add it to the elimination array*/
-						if (curr.mark()) {
-							newElimArray.addNode(curr);
-						}
-					}
-					curr = curr.next[0].getReference();
-				}
-				
-				// Spin until ongoing eliminations are done
-				while(!_elimArray.completed()) { }
-
-				// publish the ready elimination array
-				_elimArray = newElimArray;
-
-			}
-
-			finally{
-				_lock1.writeLock().unlock();
-				// TODO: safely-unlock the other locks?
-			}
-			
-			return true;
+		if (!_lock1.writeLock().tryLock())
+		{
+			return false;
 		}
 
-		return false;
+		try {
+
+			// Coherency check:
+			if(_elimArray.hasNodes())
+			{
+				// Someone else performed cleanup and I missed it, go back to empty the elimination array
+				return false;
+			}
+
+			// Block inserters
+			_lock2.writeLock().lock();
+			_lock3.writeLock().lock();
+
+			/* Determine the max number of Healthy element you want to traverse */
+			int numOfHealtyNodes = 10; // TODO: Determine it for a variable
+
+			/* Create an Elimination Array in this size */
+			NodesEliminationArray newElimArray = new NodesEliminationArray(numOfHealtyNodes);
+
+			/* Traverse the list in the bottom level look for healthy element, and find an optimal group */
+			int foundHealthyNodes = 0;
+			int maxLevelFound = 0;
+			int len = 0; // TODO: Remove
+			int actualLen = 0; // TODO: Remove
+			CoolSprayListNode firstNode = _head.next[0].getReference();
+			CoolSprayListNode curr = firstNode;
+			CoolSprayListNode highest = curr;
+			while (foundHealthyNodes < numOfHealtyNodes && curr != _tail) {
+				len++;
+				if (!curr.isMarked()) {
+					foundHealthyNodes +=1;
+				}
+				/* find the last highest node in the ragne */
+				if (maxLevelFound <= curr.topLevel()) {
+					highest = curr;
+					maxLevelFound = curr.topLevel();
+					actualLen = len;
+
+					// TODO: Compare live-dead element ratios?
+				}
+				curr = curr.next[0].getReference();
+			}
+
+			highestNodeKey = highest.value;
+
+			if(firstNode == _tail)
+			{
+				// No nodes to remove
+				highestNodeKey = null;
+				_lock2.writeLock().unlock();
+				_lock3.writeLock().unlock();
+				return false;
+			}
+
+			_lock2.writeLock().unlock(); // high-valued inserts can go on
+
+			// Now you have a range that you want to delete. mark the highest node's markable reference in all levels,
+			// so other threads cannot add a node after it.
+			// Starting the marking process from the bottom, blocks new inserts from interrupting.
+			for (int level= 0; level <= highest.topLevel(); level++) {
+				while (true) {
+					CoolSprayListNode succ = highest.next[level].getReference();
+					if (highest.next[level].attemptMark(succ, true)) {
+						break;
+					}
+				}
+			}
+			
+			/* Now - nobody can connect a node after the highest node - in the deletion list - connect the head*/
+			for (int level= 0; level <= highest.topLevel(); level++) {
+				_head.next[level].set(highest.next[level].getReference(), false);
+			}
+
+			_lock3.writeLock().unlock(); // no more messing around with the skiplist, all inserts can go on
+			_lock2.writeLock().lock(); // shortly block all inserters to change highetNodeKey, avoids race / NullPointerException
+			highestNodeKey = null;
+
+			_lock2.writeLock().unlock();
+
+			/* Now  - logically delete each alive node in the group deleted and add it to the elimination array */
+			curr = firstNode;
+			while (curr != highest){
+				if (!curr.isMarked()) {
+					/*If I marked it - add it to the elimination array*/
+					if (curr.mark()) {
+						newElimArray.addNode(curr);
+					}
+				}
+				curr = curr.next[0].getReference();
+			}
+
+			// Spin until ongoing eliminations are done
+			while(!_elimArray.completed()) { }
+
+			// publish the ready elimination array
+			_elimArray = newElimArray;
+
+		}
+
+		finally{
+			_lock1.writeLock().unlock();
+			// TODO: safely-unlock the other locks?
+		}
+
+		return true;
 	}
 	
 	/*This remove is wait-free and only logically remove the item */
