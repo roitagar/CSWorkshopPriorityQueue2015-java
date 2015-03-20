@@ -81,10 +81,12 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			// Don't interfere with disconnecting a delete-group
 			_lock3.readLock().lock();
 
-			// TODO: instead of waiting, join the elimination?
+			// TODO: maybe instead of waiting, join the elimination array being built right now?
+			//		 not sure it's a good idea, since it requires complex synchronization with the cleaner thread
 		}
 
 		// TODO: check if there are elimination items smaller than my item? maybe after inserting?
+		//		 if so, eliminate then back to the list, to preserve linearizability
 
 		try {
 			while(true)
@@ -130,8 +132,13 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 						while (true) {
 							pred = preds[level];
 							succ = succs[level];
-							//TODO: Check if it OK
-							newNode.next[level].set(succ, false); //connect the new node to the next succ if it was changed
+							
+							// connect the new node to the next successor
+							// Note: This action is repeated until connecting pred to newNode succeeds, unlike in the lock-free implementation
+							//		 Although it seems to increase accesses due to retries, this implementation heavily reduces retries,
+							//		 due to grouped removals, thus allowing us to maintain better correctness of the skiplist structure without
+							//		 harming performance.
+							newNode.next[level].set(succ, false);
 
 							if (pred.next[level].compareAndSet(succ, newNode, false, false)){
 								break; 
@@ -167,23 +174,17 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					return false;
 				}
 				
-				// Spin until ongoing eliminations are done
-				while(!_elimArray.completed()) { } // TODO: Move this to the end?
-				
 				// Block inserters
 				_lock2.writeLock().lock();
 				_lock3.writeLock().lock();
 				
-				/*Determine the max number of Healthy element you want to traverse */
-				int numOfHealtyNodes = 10; //TODO: Determine it for a variable
+				/* Determine the max number of Healthy element you want to traverse */
+				int numOfHealtyNodes = 10; // TODO: Determine it for a variable
 				
-				
-				
-				// TODO: Just hold the same one instance?
-				/*Create an Elimination Array in this size */
+				/* Create an Elimination Array in this size */
 				NodesEliminationArray newElimArray = new NodesEliminationArray(numOfHealtyNodes);
 				
-				/*Traverse the list in the bottom level look for healthy element, and find an optimal group */
+				/* Traverse the list in the bottom level look for healthy element, and find an optimal group */
 				int foundHealthyNodes = 0;
 				int maxLevelFound = 0;
 				int len = 0; // TODO: Remove
@@ -196,7 +197,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					if (!curr.isMarked()) {
 						foundHealthyNodes +=1;
 					}
-					/*find the last highest node in the ragne */
+					/* find the last highest node in the ragne */
 					if (maxLevelFound <= curr.topLevel()) {
 						highest = curr;
 						maxLevelFound = curr.topLevel();
@@ -220,9 +221,9 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				
 				_lock2.writeLock().unlock(); // high-valued inserts can go on
 				
-				/*Now you have a range that you want to delete  mark the highest node's markable reference,
-				 * so other threads cannot add a node after it */
-				//TODO: to to top or vice versa?
+				// Now you have a range that you want to delete. mark the highest node's markable reference in all levels,
+				// so other threads cannot add a node after it.
+				// Starting the marking process from the bottom, blocks new inserts from interrupting.
 				for (int level= 0; level <= highest.topLevel(); level++) {
 					while (true) {
 						CoolSprayListNode succ = highest.next[level].getReference();
@@ -231,7 +232,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 						}
 					}
 				}
-				/*Now - nobody can connect a node after the highest node - in the deletion list - connect the head*/
+				/* Now - nobody can connect a node after the highest node - in the deletion list - connect the head*/
 				for (int level= 0; level <= highest.topLevel(); level++) {
 					_head.next[level].set(highest.next[level].getReference(), false);
 				}
@@ -242,7 +243,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 				_lock2.writeLock().unlock();
 				
-				/*Now  - logically delete each alive node in the group deleted and add it to the elimination array */
+				/* Now  - logically delete each alive node in the group deleted and add it to the elimination array */
 				curr = firstNode;
 				while (curr != highest){
 					if (!curr.isMarked()) {
@@ -254,6 +255,9 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					curr = curr.next[0].getReference();
 				}
 				
+				// Spin until ongoing eliminations are done
+				while(!_elimArray.completed()) { }
+
 				// publish the ready elimination array
 				_elimArray = newElimArray;
 
@@ -432,7 +436,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	}
 	
 	private class NodesEliminationArray {
-		private CoolSprayListNode[] arr; // TODO: int array?
+		private CoolSprayListNode[] arr;
 		private AtomicInteger nextNode; // token allocator
 		private AtomicInteger pendingCompletion; // prevents overriding before array access is done
 		
