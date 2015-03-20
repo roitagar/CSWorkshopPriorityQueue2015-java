@@ -11,7 +11,8 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	
 	protected final int _maxAllowedHeight;
 	protected AtomicInteger _threads;
-	protected AtomicInteger _size;
+	protected AtomicInteger _liveItems;
+	protected AtomicInteger _itemsInSkipList;
 	protected CoolSprayListNode _head;
 	protected CoolSprayListNode _tail;
 	protected volatile NodesEliminationArray _elimArray;
@@ -19,10 +20,13 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	private ReadWriteLock _lock2; // during delete-group selection - blocks all inserters
 	private ReadWriteLock _lock3; // during delete-group disconnection - blocks low inserters
 	volatile Integer highestNodeKey;
+	private final boolean _useItemsCounter;
 	
-	public CoolSprayListPriorityQueue(int maxAllowedHeight) {
+	public CoolSprayListPriorityQueue(int maxAllowedHeight, boolean useItemsCounter) {
 		_maxAllowedHeight = maxAllowedHeight;
 		_threads = new AtomicInteger(0);
+		_liveItems = new AtomicInteger(0);
+		_itemsInSkipList = new AtomicInteger(0);
 		_head = new CoolSprayListNode(Integer.MIN_VALUE, maxAllowedHeight);
 		_tail = new CoolSprayListNode(Integer.MAX_VALUE, maxAllowedHeight);
 		_elimArray = new NodesEliminationArray(0);
@@ -30,6 +34,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		_lock2 = new ReentrantReadWriteLock(true);
 		_lock3 = new ReentrantReadWriteLock(true);
 		highestNodeKey = null;
+		_useItemsCounter = useItemsCounter; 
 		
 		for(int i=0;i<=_maxAllowedHeight;i++)
 		{
@@ -102,6 +107,12 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				else if (status == NodeStatus.MARKED) {
 					/*Node is physically exist and only logically deleted - unmarked it */
 					boolean IRevivedIt = succs[0].unmark();
+
+					if(IRevivedIt)
+					{
+						logInsertion(true);
+					}
+					
 					return IRevivedIt;
 				}
 				else if (_elimArray.contains(value))
@@ -126,6 +137,9 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					if(!pred.next[0].compareAndSet(succ, newNode, false, false)) {
 						continue;
 					}
+					
+					logInsertion(false);
+					
 					/* now when level 0 is connected - connect the other predecessors from the other levels to the new node.
 					 * If you fail to connect a specific level - find again - means - prepare new arrays of preds and succs,
 					 * and continue from the level you failed.
@@ -233,7 +247,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			// Now you have a range that you want to delete. mark the highest node's markable reference in all levels,
 			// so other threads cannot add a node after it.
 			// Starting the marking process from the bottom, blocks new inserts from interrupting.
-			for (int level= 0; level <= highest.topLevel(); level++) {
+			for (int level=0; level <= highest.topLevel(); level++) {
 				while (true) {
 					CoolSprayListNode succ = highest.next[level].getReference();
 					if (highest.next[level].attemptMark(succ, true)) {
@@ -243,7 +257,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			}
 			
 			/* Now - nobody can connect a node after the highest node - in the deletion list - connect the head*/
-			for (int level= 0; level <= highest.topLevel(); level++) {
+			for (int level=0; level <= highest.topLevel(); level++) {
 				_head.next[level].set(highest.next[level].getReference(), false);
 			}
 
@@ -255,7 +269,11 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 			/* Now  - logically delete each alive node in the group deleted and add it to the elimination array */
 			curr = firstNode;
-			while (curr != highest){
+			boolean done = false;
+			while (!done){
+				if(curr == highest) // last node to process
+					done = true;
+				
 				if (!curr.isMarked()) {
 					/*If I marked it - add it to the elimination array*/
 					if (curr.mark()) {
@@ -264,6 +282,8 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				}
 				curr = curr.next[0].getReference();
 			}
+			
+			logCleanup(actualLen);
 
 			// Spin until ongoing eliminations are done
 			while(!_elimArray.completed()) { }
@@ -281,7 +301,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		return true;
 	}
 	
-	/*This remove is wait-free and only logically remove the item */
+	/* This remove is wait-free and only logically removes the item */
 	protected boolean remove(int value) {
 		CoolSprayListNode[] preds = new CoolSprayListNode[_maxAllowedHeight+1];
 		CoolSprayListNode[] succs = new CoolSprayListNode[_maxAllowedHeight+1];
@@ -315,7 +335,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			 * Usually don't advance to tail
 			 * Advance to tail when list is empty
 			 */
-			for(;(j>0 || x==_head) && x!=_tail && (x.next[level].getReference() != _tail || isEmpty());j--)
+			for(;(j>0 || x==_head) && x!=_tail && (x.next[level].getReference() != _tail || isSkipListEmpty());j--)
 			{
 				x = x.next[level].getReference();
 				
@@ -393,17 +413,73 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		
 		_threads.getAndDecrement();
 		
+		if(result != Integer.MAX_VALUE)
+		{
+			logRemoval();
+		}
+		
 		return result;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		if(_head.next[0].getReference() == _tail && !_elimArray.hasNodes() /* TODO: && !_cleanerrunning */)
+		if(_useItemsCounter)
+		{
+			return _liveItems.get() == 0;
+		}
+		else if(_head.next[0].getReference() == _tail && !_elimArray.hasNodes() /* TODO: && !_cleanerrunning */)
 		{
 			return true;
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * for internal use - due to items in elimination array, the list might be empty
+	 * even when the queue is not empty
+	 */
+	private boolean isSkipListEmpty()
+	{
+		if(_useItemsCounter)
+		{
+			return _itemsInSkipList.get() == 0;
+		}
+
+		return _head.next[0].getReference() == _tail;
+	}
+	
+	/**
+	 * inform a successful insertion
+	 */
+	private void logInsertion(boolean revive)
+	{
+		if(_useItemsCounter)
+		{
+			_liveItems.getAndIncrement();
+			if(!revive)
+			{
+				_itemsInSkipList.getAndIncrement();
+			}
+		}
+	}
+	
+	/**
+	 * inform a successful logical removal
+	 */
+	private void logRemoval()
+	{
+		if(_useItemsCounter)
+			_liveItems.getAndDecrement();
+	}
+	
+	/**
+	 * inform a successful batch cleanup
+	 */
+	private void logCleanup(int amount)
+	{
+		if(_useItemsCounter)
+			_itemsInSkipList.getAndAdd(-amount);
 	}
 	
 	protected class CoolSprayListNode {

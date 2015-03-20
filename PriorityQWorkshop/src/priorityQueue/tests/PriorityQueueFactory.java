@@ -45,10 +45,17 @@ class LockFreeSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	}
 }
 
-class CoolSprayListPriorityQueueFactory extends PriorityQueueFactory {
+class CoolSprayListPriorityQueueWithItemsCounterFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight);
+		return new CoolSprayListPriorityQueue(skiplistHeight, true);
+	}
+}
+
+class CoolSprayListPriorityQueueWithImpreciseIsEmptyFactory extends PriorityQueueFactory {
+	@Override
+	IPriorityQueue Create(int skiplistHeight) {
+		return new CoolSprayListPriorityQueue(skiplistHeight, false);
 	}
 }
 

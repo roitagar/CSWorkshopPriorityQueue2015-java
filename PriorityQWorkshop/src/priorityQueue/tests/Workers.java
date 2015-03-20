@@ -94,8 +94,8 @@ class SimpleInsertWorker extends InsertWorker {
 	@Override
 	public void run() {
 		for (int i = _from; i < _from + _amount; i++) {
-			_queue.insert(i);
-			_totalPackets++;
+			if(_queue.insert(i))
+				_totalPackets++;
 		}
 	}
 }
@@ -196,8 +196,8 @@ class AdvancedInsertWorker extends InsertWorker {
 		{
 			int value = _generator.getNext();
 			if(value>0){
-				_queue.insert(value);
-				_totalPackets++;
+				if(_queue.insert(value))
+					_totalPackets++;
 			}
 		}
 	}
@@ -233,8 +233,8 @@ class AdvancedInsertWorkerUntilValue extends InsertWorker {
 			{
 				// if the value is not as expected, need to keep going
 				reallyDone = false;
-				_queue.insert(value);
-				_totalPackets++;
+				if(_queue.insert(value))
+					_totalPackets++;
 			}
 
 		}
