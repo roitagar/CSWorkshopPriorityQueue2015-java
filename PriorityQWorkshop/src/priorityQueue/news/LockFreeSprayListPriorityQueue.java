@@ -64,6 +64,7 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 				 * and also if it is not marked (because a node is logically deleted if its next[0] is marked).
 				 * If everything is OK - connect (atomically with the test) the predecessor at level 0 to the new node at level 0.
 				 * Otherwise - something was changed - start over.
+				 * When the node is connected at level 0 is considered as a linearization point.
 				 */
 				if(!pred.next[0].compareAndSet(succ, newNode, false, false)) {
 					continue;
@@ -106,7 +107,7 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 				return false;
 			} 
 			
-			/*The exists in the set */
+			/*The node exists in the set */
 			
 			else {
 				/*Traverse all the levels - except the bottom level (level 0) of the victim, top to level 1,
@@ -170,6 +171,7 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 
 	/* The find function is lock-free in contrast to the lazy implementation (where it is wait-free).
 	 * When it notices a marked node, it tries to physically remove it.
+	 * Pay attention that the level a node were found is meaningless because it might not fully linked!
 	 */
 	
 	protected boolean find(int value, LockFreeSprayListNode[] preds, LockFreeSprayListNode[] succs)
