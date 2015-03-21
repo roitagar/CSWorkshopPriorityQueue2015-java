@@ -106,7 +106,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 				else if (status == NodeStatus.MARKED) {
 					/*Node is physically exist and only logically deleted - unmarked it */
-					boolean IRevivedIt = succs[0].unmark();
+					boolean IRevivedIt = succs[0].revive();
 
 					if(IRevivedIt)
 					{
@@ -218,7 +218,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			while (foundHealthyNodes < numOfHealtyNodes && curr != _tail) {
 				len++;
 				if (!curr.isMarked()) {
-					foundHealthyNodes +=1;
+					foundHealthyNodes++;
 				}
 				/* find the last highest node in the ragne */
 				if (maxLevelFound <= curr.topLevel()) {
@@ -276,7 +276,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				
 				if (!curr.isMarked()) {
 					/*If I marked it - add it to the elimination array*/
-					if (curr.mark()) {
+					if (curr.markAsEliminationNode()) {
 						newElimArray.addNode(curr);
 					}
 				}
@@ -315,7 +315,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		else {
 			/*remove it logically and check if it was marked before*/
 			CoolSprayListNode nodeToRemove = succs[0];	
-			boolean iMarkedIt = nodeToRemove.mark();
+			boolean iMarkedIt = nodeToRemove.logicallyDeleteFromList();
 			return iMarkedIt;
 		}
 	}
@@ -486,7 +486,13 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		public int value;
 		/*The mark in the AtomicMarkableReference is used to the phyiscal deleteion of the last node in the deletion group */ 
 		public AtomicMarkableReference<CoolSprayListNode>[] next;
-		private AtomicBoolean _marked;
+		private AtomicInteger _status;
+		/* status can be either:
+		 * 0 - alive in the skiplist
+		 * 1 - logically deleted in the skiplist
+		 * 2 - alive in the elimination array (but not alive in the skiplist)
+		 * 3 - logically deleted in the elimination array 
+		 */
 		
 		public CoolSprayListNode(int value, int height) {
 			this.value = value;
@@ -495,7 +501,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				next[i] = new AtomicMarkableReference<CoolSprayListNode>(null,false);
 			}
 			
-			_marked = new AtomicBoolean(false);
+			_status = new AtomicInteger(0);
 		}
 		
 		public int topLevel()
@@ -504,17 +510,29 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		}
 		
 		/* try to mark and return if succeed */
-		public boolean mark() {
-			return _marked.compareAndSet(false, true);
+		public boolean markAsEliminationNode() {
+			return _status.compareAndSet(0, 2);
 		}
 		
-		/* try to unmark and return if succeed */
-		public boolean unmark() {
-			return _marked.compareAndSet(true, false);
+		public boolean logicallyDeleteFromList() {
+			return _status.compareAndSet(0, 1);
+		}
+		
+		/* try to revive the node and return true if succeed */
+		public boolean revive() { 
+			return (_status.compareAndSet(1, 0) || _status.compareAndSet(3, 0));
+		}
+		
+		public boolean reinsert() {
+			return _status.compareAndSet(2, 0);
+		}
+		
+		public boolean eliminate() {
+			return _status.compareAndSet(2, 3);
 		}
 		
 		public boolean isMarked() {
-			return _marked.get();
+			return _status.get() != 0;
 		}
 	}
 	
