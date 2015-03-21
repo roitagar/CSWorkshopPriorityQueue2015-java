@@ -74,6 +74,7 @@ public abstract class TestBench {
 				if(_insertWorkerThreads[i].isAlive())
 				{
 					_insertWorkerThreads[i].interrupt();
+					_insertWorkerThreads[i].join();
 					kicked = true;
 				}
 			} catch (InterruptedException ignore) {;}
@@ -92,6 +93,7 @@ public abstract class TestBench {
 				if(_deleteWorkerThreads[i].isAlive())
 				{
 					_deleteWorkerThreads[i].interrupt();
+					_deleteWorkerThreads[i].join();
 					kicked = true;
 				}
 			} catch (InterruptedException ignore) {;}
