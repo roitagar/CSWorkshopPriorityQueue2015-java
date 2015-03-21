@@ -275,7 +275,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					done = true;
 				
 				if (!curr.isMarked()) {
-					/*If I marked it - add it to the elimination array*/
+					// Try to mark it as node in the eliminataion array.
 					if (curr.markAsEliminationNode()) {
 						newElimArray.addNode(curr);
 					}
@@ -534,28 +534,38 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		public boolean isMarked() {
 			return _status.get() != 0;
 		}
+
+		public boolean isDeleted() {
+			return _status.get() == 1 || _status.get() == 3;
+		}
 	}
 	
 	private class NodesEliminationArray {
 		private CoolSprayListNode[] arr;
-		private AtomicInteger nextNode; // token allocator
+		private AtomicInteger deleteMinCounter; // token allocator
+		private AtomicInteger reInsertCounter; // token allocator
 		private AtomicInteger pendingCompletion; // prevents overriding before array access is done
-		
+		private int numOfNodes = 0; //number of initial total nodes after all insertions 
 		public NodesEliminationArray(int size) {
 			arr = new CoolSprayListNode[size];
-			nextNode = new AtomicInteger(0);
+			deleteMinCounter = new AtomicInteger(0);
+			reInsertCounter = new AtomicInteger(0);
 			pendingCompletion = new AtomicInteger(0);
+			
 		}
 		public void addNode(CoolSprayListNode node) {
-			int i = nextNode.getAndIncrement();
+			int i = deleteMinCounter.getAndIncrement();
 			arr[i] = node;
 			pendingCompletion.getAndIncrement();
+			reInsertCounter.getAndIncrement();
+			numOfNodes++;
 		}
 		
+		//Traverse the array from lowest to highest
 		public CoolSprayListNode getNode() {
 			// get token
-			int i = nextNode.getAndDecrement() - 1;
-			if (i<0) {
+			int i = numOfNodes -  deleteMinCounter.decrementAndGet();
+			if (i > numOfNodes) {
 				return null;
 			}
 			
@@ -564,11 +574,35 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			
 			// inform completion, "release" the array
 			pendingCompletion.getAndDecrement();
+			
+			//Try to mark the item as deleted - means that no re-insertion was done (or got the linearization point)
+			if (result.eliminate()) {	
+				return result;
+			}
+			//otherwise - someone else (re-insertion) succeed to insert and mark it as ready so try the next node.
+			return getNode();
+		}
+		
+		//Traverse the array from highest to lowest
+		public CoolSprayListNode getNodeForReinsert() {
+			// get token
+			int i = reInsertCounter.decrementAndGet();
+			if (i<0 || !hasNodes()) {
+				return null;
+			}
+			//Now get value and check if node was already deleted by other delete-min if it was - also reset the counter
+			CoolSprayListNode result = arr[i];
+			if (result.isDeleted()) {
+				reInsertCounter.set(0);
+				return null;
+			}
+			
+			//return result
 			return result;
 		}
 		
 		public boolean hasNodes(){
-			return nextNode.get() > 0;
+			return deleteMinCounter.get() > 0;
 		}
 		
 		public boolean completed()
@@ -581,7 +615,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			int i;
 			
 			// go over values that were not removed yet
-			for(i=0; i< nextNode.get();i++)
+			for(i=0; i< deleteMinCounter.get();i++)
 			{
 				// if value found
 				if(arr[i].value == value)
