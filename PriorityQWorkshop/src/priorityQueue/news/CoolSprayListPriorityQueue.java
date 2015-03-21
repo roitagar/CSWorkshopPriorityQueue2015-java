@@ -267,7 +267,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 			_lock2.writeLock().unlock();
 
-			/* Now  - logically delete each alive node in the group deleted and add it to the elimination array */
+			/* Now  - mark each alive node in the group as belong to elimination array and add it to the elimination array */
 			curr = firstNode;
 			boolean done = false;
 			while (!done){
@@ -275,7 +275,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					done = true;
 				
 				if (!curr.isMarked()) {
-					// Try to mark it as node in the eliminataion array.
+					// Try to mark it as node of the eliminataion array.
 					if (curr.markAsEliminationNode()) {
 						newElimArray.addNode(curr);
 					}
@@ -564,7 +564,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		//Traverse the array from lowest to highest
 		public CoolSprayListNode getNode() {
 			// get token
-			int i = numOfNodes -  deleteMinCounter.decrementAndGet();
+			int i = numOfNodes -  deleteMinCounter.getAndDecrement();
 			if (i > numOfNodes) {
 				return null;
 			}
@@ -610,20 +610,26 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			return pendingCompletion.get() == 0;
 		}
 		
+		public CoolSprayListNode getHighestNode() {
+			int  i = reInsertCounter.get();
+			if (i >= 0) {
+				return arr[i];
+			}
+			return null;
+		}
+		
 		public boolean contains(int value)
 		{
-			int i;
-			
+			int i;	
 			// go over values that were not removed yet
-			for(i=0; i< deleteMinCounter.get();i++)
+			for(i= 0; i<deleteMinCounter.get();i++)
 			{
-				// if value found
-				if(arr[i].value == value)
+				// if value found and not deleted (linearization point) return true
+				if(arr[numOfNodes - i].value == value && !arr[numOfNodes - i].isDeleted())
 				{
 					return true;
 				}
 			}
-			
 			return false;
 		}
 	}
