@@ -551,7 +551,7 @@ public class TestUtils {
 		saveData("      data.addColumn('number', 'LockFreeSprayListPriorityQueue');");
 		saveData("      data.addColumn('number', 'TMSprayListPriorityQueueWithoutCounter');");
 		saveData("      data.addColumn('number', 'TMSprayListPriorityQueueWithCounter');");
-		saveData("      data.addColumn('number', 'TMSprayListPriorityQueueWithCounter');");
+		saveData("      data.addColumn('number', 'CoolSprayListPriorityQueue');");
 		saveData("");
 		saveData("      data.addRows([");
 
