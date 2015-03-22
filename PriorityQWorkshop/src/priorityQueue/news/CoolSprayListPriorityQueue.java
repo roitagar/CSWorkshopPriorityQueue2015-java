@@ -75,6 +75,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		_threads.getAndIncrement();
 		int topLevel = serviceClass.randomLevel(_maxAllowedHeight);
 		boolean shouldReleaseLock3 = false;
+		boolean reinsert = false; // determine insertion phase
 		CoolSprayListNode[] preds = new CoolSprayListNode[_maxAllowedHeight+1];
 		CoolSprayListNode[] succs = new CoolSprayListNode[_maxAllowedHeight+1];
 
@@ -92,12 +93,23 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				//		 not sure it's a good idea, since it requires complex synchronization with the cleaner thread
 			}
 
-			// TODO: check if there are elimination items smaller than my item? maybe after inserting?
-			//		 if so, eliminate then back to the list, to preserve linearizability
+			/* create a new node */
+			CoolSprayListNode newNode = new CoolSprayListNode(value, topLevel);
 
+			// Insertion might have two phases:
+			// 		1. insert the requested value
+			//		2. reinsert an item from the elimination array back to the skiplist
+			//
+			// if there are elimination items smaller than my value, 
+			// I need to eliminate them back to the list, to preserve linearizability
+			//
+			// every insert thread reinserts at most one item. the elimination array is depleted only if enough insert operations
+			// are performed before deleteMin operations, otherwise deleteMin operations will deplete the elimination array before
+			// linearizability is harmed
+			
 			while(true)
 			{
-				if (_elimArray.contains(value))
+				if (!reinsert && _elimArray.contains(value))
 				{
 					// Node exists, and is pending deletion in the elimination array
 					return false;
@@ -105,13 +117,13 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 				NodeStatus status = find(value, preds, succs);
 
-				if(status == NodeStatus.FOUND) {
+				if(!reinsert && status == NodeStatus.FOUND) {
 					/* linearization point of unsuccessful insertion */
 					return false;
 				}
 
-				if (status == NodeStatus.DELETED) {
-					/* Node physically exists, and only logically deleted - unmarked it */
+				if (!reinsert && status == NodeStatus.DELETED) {
+					/* Node physically exists, and only logically deleted - unmark it */
 					boolean IRevivedIt = succs[0].revive();
 
 					if(IRevivedIt)
@@ -121,23 +133,40 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					
 					return IRevivedIt;
 				}
-
+				
+				//TODO: This should not happen - we have to make sure it does not, and remove this check!!!
+				if (reinsert && status != NodeStatus.NOT_FOUND) {
+//					System.out.println("Ilegal status - and element was found in the list and while it should not!");
+					System.out.println("Damn, " + value + " in skiplist " + status + ", my node deleted? " + newNode._status.get());
+				}
+				
+				if (reinsert && newNode.isDeleted())
+				{
+					// some deleteMin successfully eliminated this node, no need to reinsert it
+					// original insertion was successful
+					return true;
+				}
+				
 				/* The item is not in the set (both physically and logically - so add it */
 
-				/* create a new node */
-				CoolSprayListNode newNode = new CoolSprayListNode(value, topLevel);
-
-				/* connect level 0 of newNode to it successor */
+				/* connect level 0 of newNode to its successor */
 				newNode.next[0].set(succs[0], false);
 				CoolSprayListNode pred = preds[0];
 				CoolSprayListNode succ = succs[0];
 
-				/*try to connect the bottom level - this is a linearization point of successful insertion*/
+				/* try to connect the bottom level - this is a linearization point of successful insertion*/
 				if(!pred.next[0].compareAndSet(succ, newNode, false, false)) {
 					continue;
 				}
-
-				logInsertion(false);
+				
+				if(reinsert)
+				{
+					logReinsert();
+				}
+				else
+				{
+					logInsertion(false);
+				}
 
 				/* now when level 0 is connected - connect the other predecessors from the other levels to the new node.
 				 * If you fail to connect a specific level - find again - means - prepare new arrays of preds and succs,
@@ -163,6 +192,24 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 						find(value, preds, succs);	 
 					}
 				}
+				
+				if(!reinsert)
+				{
+					// successful insertion completed, now check if we need to help fix linearization by
+					// reinserting a high-valued node from the elimination array to the skiplist 
+					newNode = _elimArray.getNodeForReinsert(value);
+					reinsert = newNode != null;
+					if(reinsert)
+					{
+						value = newNode.value;
+						topLevel = newNode.topLevel();
+						
+						// repeat insertion with the reinsert node
+						continue;
+					}
+				}
+				
+				// success
 				return true;
 			}
 		}
@@ -274,11 +321,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				curr = curr.next[0].getReference();
 			}
 			
-			highestNodeKey = null;
-			
-			// now after the elimination array is ready, also the lower inserters can go.
-			_lock3.writeLock().unlock(); 
-			
 			logCleanup(actualLen);
 
 			// Spin until ongoing eliminations are done
@@ -287,6 +329,11 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			// publish the ready elimination array
 			_elimArray = newElimArray;
 
+			highestNodeKey = null;
+			
+			// now after the elimination array is ready, also the lower inserters can go.
+			_lock3.writeLock().unlock(); 
+			
 		}
 
 		finally{
@@ -460,6 +507,14 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		}
 	}
 	
+	private void logReinsert()
+	{
+		if(_useItemsCounter)
+		{
+			_itemsInSkipList.getAndIncrement();
+		}
+	}
+	
 	/**
 	 * inform a successful logical removal
 	 */
@@ -538,7 +593,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		private AtomicInteger deleteMinCounter; // token allocator
 		private AtomicInteger reInsertCounter; // token allocator
 		private AtomicInteger pendingCompletion; // prevents overriding before array access is done
-		private int numOfNodes = 0; //number of initial total nodes after all insertions 
+		private int numOfNodes = 0; //number of initial total nodes after all insertions
 		public NodesEliminationArray(int size) {
 			arr = new CoolSprayListNode[size];
 			deleteMinCounter = new AtomicInteger(0);
@@ -622,8 +677,10 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		
 		public boolean contains(int value)
 		{
+			// TODO: maybe go over all items, since some of them might have been reinserted instead of eliminated
+			
 			// go over values that were not removed yet
-			for(int i=1; i<=deleteMinCounter.get(); i++)
+			for(int i=1; i<= numOfNodes /*deleteMinCounter.get()*/; i++)
 			{
 				// if value found and not deleted (linearization point) return true
 				if(arr[numOfNodes - i].value == value && !arr[numOfNodes - i].isDeleted())
