@@ -5,6 +5,8 @@ PriorityQWorkshop/.settings/org.eclipse.jdt.core.prefs -text svneol=unset#text/p
 PriorityQWorkshop/lib/deuceAgent-1.3.0.jar -text
 PriorityQWorkshop/lib/deuceagent-2.0.jar -text
 PriorityQWorkshop/lib/junit-4.12.jar -text
+PriorityQWorkshop/lib/junit.jar -text
+PriorityQWorkshop/lib/org.hamcrest.core_1.3.0.v201303031735.jar -text
 PriorityQWorkshop/maintest.launch -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/CoolSprayListPriorityQueue.java -text svneol=unset#text/plain
 PriorityQWorkshop/src/priorityQueue/news/GlobalLockSprayListPriorityQueue.java -text svneol=unset#text/plain
