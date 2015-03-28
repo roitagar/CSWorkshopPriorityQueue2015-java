@@ -102,7 +102,7 @@ public class TestUtils {
 	@Test
 	public void generateGraphs(){
 
-		String fileName = "results_20150317_234947.txt";
+		String fileName = "results_20150322_202349.txt";
 		testBenchesNames.put("B_0", "testBench2");
 		testBenchesNames.put("B_1", "testBench5");
 		testBenchesNames.put("B_2", "testBench8");
@@ -184,7 +184,15 @@ public class TestUtils {
 						}else{
 							currentRow = new ChartRow(5);
 						}
-
+						
+						if(rowEntry.getQueueType().equals("JavaPriorityBockingQueue")){
+							currentRow.JavaPriorityBockingQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.JavaPriorityBockingQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.JavaPriorityBockingQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.JavaPriorityBockingQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.JavaPriorityBockingQueue_val[4]=rowEntry.getVarianceGrade();
+						}
+						
 						if(rowEntry.getQueueType().equals("NaiveLockNativePriorityQueue")){
 							currentRow.NaiveLockNativePriorityQueue_val[0]=rowEntry.getInsertThroughput();
 							currentRow.NaiveLockNativePriorityQueue_val[1]=rowEntry.getDeleteThroughput();
@@ -199,19 +207,19 @@ public class TestUtils {
 							currentRow.GlobalLockSprayListPriorityQueue_val[3]=rowEntry.getAvgGrade();
 							currentRow.GlobalLockSprayListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
-						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueueWithCounter")){
-							currentRow.TMSprayListPriorityQueueWithCounter_val[0]=rowEntry.getInsertThroughput();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[2]=rowEntry.getThroughputRatio();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[3]=rowEntry.getAvgGrade();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[4]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueue")){
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
-						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueueWithoutCounter")){
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[0]=rowEntry.getInsertThroughput();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[2]=rowEntry.getThroughputRatio();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[3]=rowEntry.getAvgGrade();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[4]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueue")){
+							currentRow.TMSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.TMSprayListPriorityQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.TMSprayListPriorityQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.TMSprayListPriorityQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.TMSprayListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
 						if(rowEntry.getQueueType().equals("LockFreeSprayListPriorityQueue")){
 							currentRow.LockFreeSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
@@ -235,6 +243,53 @@ public class TestUtils {
 							currentRow.LazyLockSparyListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
 
+						if(rowEntry.getQueueType().equals("CoolSprayListPriorityQueueFairLock")){
+							currentRow.CoolSprayListPriorityQueueFairLock_val[0]=rowEntry.getInsertThroughput();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[2]=rowEntry.getThroughputRatio();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[3]=rowEntry.getAvgGrade();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueueFairLock")){
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[3]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("GlobalLockSprayListPriorityQueue_CPP")){
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("LazyLockSparyListPriorityQueue_CPP")){
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("CoolSprayListPriorityQueue_CPP")){
+							currentRow.CoolSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueue_CPP")){
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
 						chartData.put(x_value, currentRow);
 					}
 				}
@@ -246,7 +301,7 @@ public class TestUtils {
 					startGraph(id,false);
 
 					for(Entry<String, ChartRow> en: chartData.entrySet()){
-						saveData(en.getKey(), en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueueWithoutCounter_val[i], en.getValue().TMSprayListPriorityQueueWithCounter_val[i], en.getValue().CoolSprayListPriorityQueue_val[i]);
+						saveData(en.getKey(),en.getValue().JavaPriorityBockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
 					}
 
 					endGraph(id,i, false);
@@ -302,6 +357,13 @@ public class TestUtils {
 						}else{
 							currentRow = new ChartRow(4);
 						}
+						
+						if(rowEntry.getQueueType().equals("JavaPriorityBockingQueue")){
+							currentRow.JavaPriorityBockingQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.JavaPriorityBockingQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.JavaPriorityBockingQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.JavaPriorityBockingQueue_val[3]=rowEntry.getAvgGrade();
+						}
 
 						if(rowEntry.getQueueType().equals("NaiveLockNativePriorityQueue")){
 							currentRow.NaiveLockNativePriorityQueue_val[0]=rowEntry.getInsertThroughput();
@@ -315,17 +377,17 @@ public class TestUtils {
 							currentRow.GlobalLockSprayListPriorityQueue_val[2]=rowEntry.getAvgGrade();
 							currentRow.GlobalLockSprayListPriorityQueue_val[3]=rowEntry.getVarianceGrade();
 						}
-						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueueWithCounter")){
-							currentRow.TMSprayListPriorityQueueWithCounter_val[0]=rowEntry.getInsertThroughput();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[2]=rowEntry.getAvgGrade();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[3]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueue")){
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[2]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[3]=rowEntry.getVarianceGrade();
 						}
-						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueueWithoutCounter")){
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[0]=rowEntry.getInsertThroughput();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[2]=rowEntry.getAvgGrade();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[3]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueue")){
+							currentRow.TMSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.TMSprayListPriorityQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.TMSprayListPriorityQueue_val[2]=rowEntry.getAvgGrade();
+							currentRow.TMSprayListPriorityQueue_val[3]=rowEntry.getVarianceGrade();
 						}
 						if(rowEntry.getQueueType().equals("LockFreeSprayListPriorityQueue")){
 							currentRow.LockFreeSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
@@ -346,6 +408,48 @@ public class TestUtils {
 							currentRow.LazyLockSparyListPriorityQueue_val[3]=rowEntry.getVarianceGrade();
 						}
 
+						if(rowEntry.getQueueType().equals("CoolSprayListPriorityQueueFairLock")){
+							currentRow.CoolSprayListPriorityQueueFairLock_val[0]=rowEntry.getInsertThroughput();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[2]=rowEntry.getThroughputRatio();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[3]=rowEntry.getAvgGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueueFairLock")){
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[3]=rowEntry.getAvgGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("GlobalLockSprayListPriorityQueue_CPP")){
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("LazyLockSparyListPriorityQueue_CPP")){
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("CoolSprayListPriorityQueue_CPP")){
+							currentRow.CoolSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueue_CPP")){
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+						}
+						
 						chartData.put(x_value, currentRow);
 					}
 				}
@@ -356,7 +460,7 @@ public class TestUtils {
 					startGraph(id,true);
 
 					for(Entry<String, ChartRow> en: chartData.entrySet()){
-						saveData(en.getKey(), en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueueWithoutCounter_val[i], en.getValue().TMSprayListPriorityQueueWithCounter_val[i], en.getValue().CoolSprayListPriorityQueue_val[i]);
+						saveData(en.getKey(),en.getValue().JavaPriorityBockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
 					}
 					endGraph(id,i, true);
 				}
@@ -405,6 +509,15 @@ public class TestUtils {
 						}else{
 							currentRow = new ChartRow(5);
 						}
+						
+						if(rowEntry.getQueueType().equals("JavaPriorityBockingQueue")){
+							currentRow.JavaPriorityBockingQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.JavaPriorityBockingQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.JavaPriorityBockingQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.JavaPriorityBockingQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.JavaPriorityBockingQueue_val[4]=rowEntry.getVarianceGrade();
+						}
+						
 						if(rowEntry.getQueueType().equals("NaiveLockNativePriorityQueue")){
 							currentRow.NaiveLockNativePriorityQueue_val[0]=rowEntry.getInsertThroughput();
 							currentRow.NaiveLockNativePriorityQueue_val[1]=rowEntry.getDeleteThroughput();
@@ -419,19 +532,19 @@ public class TestUtils {
 							currentRow.GlobalLockSprayListPriorityQueue_val[3]=rowEntry.getAvgGrade();
 							currentRow.GlobalLockSprayListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
-						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueueWithCounter")){
-							currentRow.TMSprayListPriorityQueueWithCounter_val[0]=rowEntry.getInsertThroughput();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[2]=rowEntry.getThroughputRatio();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[3]=rowEntry.getAvgGrade();
-							currentRow.TMSprayListPriorityQueueWithCounter_val[4]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueue")){
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
-						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueueWithoutCounter")){
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[0]=rowEntry.getInsertThroughput();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[2]=rowEntry.getThroughputRatio();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[3]=rowEntry.getAvgGrade();
-							currentRow.TMSprayListPriorityQueueWithoutCounter_val[4]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("TMSprayListPriorityQueue")){
+							currentRow.TMSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.TMSprayListPriorityQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.TMSprayListPriorityQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.TMSprayListPriorityQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.TMSprayListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
 						if(rowEntry.getQueueType().equals("LockFreeSprayListPriorityQueue")){
 							currentRow.LockFreeSprayListPriorityQueue_val[0]=rowEntry.getInsertThroughput();
@@ -454,7 +567,54 @@ public class TestUtils {
 							currentRow.LazyLockSparyListPriorityQueue_val[3]=rowEntry.getAvgGrade();
 							currentRow.LazyLockSparyListPriorityQueue_val[4]=rowEntry.getVarianceGrade();
 						}
-
+						if(rowEntry.getQueueType().equals("CoolSprayListPriorityQueueFairLock")){
+							currentRow.CoolSprayListPriorityQueueFairLock_val[0]=rowEntry.getInsertThroughput();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[2]=rowEntry.getThroughputRatio();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[3]=rowEntry.getAvgGrade();
+							currentRow.CoolSprayListPriorityQueueFairLock_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueueFairLock")){
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[3]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueueFairLock_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("GlobalLockSprayListPriorityQueue_CPP")){
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.GlobalLockSprayListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("LazyLockSparyListPriorityQueue_CPP")){
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.LazyLockSparyListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("CoolSprayListPriorityQueue_CPP")){
+							currentRow.CoolSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.CoolSprayListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
+						if(rowEntry.getQueueType().equals("OptimisticCoolSprayListPriorityQueue_CPP")){
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[0]=rowEntry.getInsertThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[2]=rowEntry.getThroughputRatio();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[3]=rowEntry.getAvgGrade();
+							currentRow.OptimisticCoolSprayListPriorityQueue_CPP_val[4]=rowEntry.getVarianceGrade();
+						}
+						
 						chartData.put(x_value, currentRow);
 					}
 				}
@@ -465,7 +625,7 @@ public class TestUtils {
 					startGraph(id,false);
 
 					for(Entry<String, ChartRow> en: chartData.entrySet()){
-						saveData(en.getKey(), en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueueWithoutCounter_val[i], en.getValue().TMSprayListPriorityQueueWithCounter_val[i], en.getValue().CoolSprayListPriorityQueue_val[i]);
+						saveData(en.getKey(), en.getValue().JavaPriorityBockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
 					}
 					endGraph(id,i, false);
 				}
@@ -484,8 +644,8 @@ public class TestUtils {
 		saveData("title: '"+getTestRule(i,flag)+"',");
 		saveData("subtitle: '"+getTestBenchName(id)+"'");
 		saveData("},");
-		saveData("width: 1000,");
-		saveData("height: 500");
+		saveData("width: 1100,");
+		saveData("height: 600");
 		saveData(" };");
 		saveData("");
 		saveData("var chart_"+id+" = new google.charts.Line(document.getElementById('test"+id+"'));");
@@ -545,13 +705,22 @@ public class TestUtils {
 		else{
 			saveData("      data.addColumn('string', 'Threads(Insert,Delete)');");
 		}
+		saveData("      data.addColumn('number', 'JavaPriorityBockingQueue');");
 		saveData("      data.addColumn('number', 'NaiveLockNativePriorityQueue');");
 		saveData("      data.addColumn('number', 'LazyLockSparyListPriorityQueue');");
 		saveData("      data.addColumn('number', 'GlobalLockSprayListPriorityQueue');");
 		saveData("      data.addColumn('number', 'LockFreeSprayListPriorityQueue');");
-		saveData("      data.addColumn('number', 'TMSprayListPriorityQueueWithoutCounter');");
-		saveData("      data.addColumn('number', 'TMSprayListPriorityQueueWithCounter');");
+		saveData("      data.addColumn('number', 'TMSprayListPriorityQueue');");
+		saveData("      data.addColumn('number', 'OptimisticCoolSprayListPriorityQueue');");
 		saveData("      data.addColumn('number', 'CoolSprayListPriorityQueue');");
+		saveData("      data.addColumn('number', 'CoolSprayListPriorityQueueFairLock');");
+		saveData("      data.addColumn('number', 'OptimisticCoolSprayListPriorityQueueFairLock');");
+		//cpp		
+		saveData("      data.addColumn('number', 'GlobalLockSprayListPriorityQueue_CPP');");
+		saveData("      data.addColumn('number', 'LazyLockSparyListPriorityQueue_CPP');");
+		saveData("      data.addColumn('number', 'CoolSprayListPriorityQueue_CPP');");
+		saveData("      data.addColumn('number', 'OptimisticCoolSprayListPriorityQueue_CPP');");
+
 		saveData("");
 		saveData("      data.addRows([");
 
@@ -598,22 +767,37 @@ public class TestUtils {
 	public class ChartRow{
 
 		//		insert,delete, avg, var;
+		String[] JavaPriorityBockingQueue_val;
 		String[] NaiveLockNativePriorityQueue_val;
 		String[] LazyLockSparyListPriorityQueue_val;
 		String[] GlobalLockSprayListPriorityQueue_val;
-		String[] TMSprayListPriorityQueueWithCounter_val;
-		String[] TMSprayListPriorityQueueWithoutCounter_val;
+		String[] OptimisticCoolSprayListPriorityQueue_val;
+		String[] TMSprayListPriorityQueue_val;
 		String[] LockFreeSprayListPriorityQueue_val;
 		String[] CoolSprayListPriorityQueue_val;
+		String[] CoolSprayListPriorityQueueFairLock_val;
+		String[] OptimisticCoolSprayListPriorityQueueFairLock_val;
+		String[] GlobalLockSprayListPriorityQueue_CPP_val;
+		String[] LazyLockSparyListPriorityQueue_CPP_val;
+		String[] CoolSprayListPriorityQueue_CPP_val;
+		String[] OptimisticCoolSprayListPriorityQueue_CPP_val;
+		
 
 		public ChartRow(int size){
+			JavaPriorityBockingQueue_val = new String[size];
 			NaiveLockNativePriorityQueue_val = new String[size];
 			LazyLockSparyListPriorityQueue_val = new String[size];
 			GlobalLockSprayListPriorityQueue_val = new String[size];
-			TMSprayListPriorityQueueWithCounter_val = new String[size];
-			TMSprayListPriorityQueueWithoutCounter_val = new String[size];
+			OptimisticCoolSprayListPriorityQueue_val = new String[size];
+			TMSprayListPriorityQueue_val = new String[size];
 			LockFreeSprayListPriorityQueue_val = new String[size];
 			CoolSprayListPriorityQueue_val = new String[size];
+			CoolSprayListPriorityQueueFairLock_val = new String[size];
+			OptimisticCoolSprayListPriorityQueueFairLock_val = new String[size];
+			GlobalLockSprayListPriorityQueue_CPP_val = new String[size];
+			LazyLockSparyListPriorityQueue_CPP_val = new String[size];
+			CoolSprayListPriorityQueue_CPP_val = new String[size];
+			OptimisticCoolSprayListPriorityQueue_CPP_val = new String[size];
 
 		}
 	}
