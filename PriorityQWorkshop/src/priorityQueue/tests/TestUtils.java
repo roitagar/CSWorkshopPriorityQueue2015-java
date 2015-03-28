@@ -82,7 +82,46 @@ public class TestUtils {
 		}
 		String line = buff.toString();
 		if(result.length>1)line = line.replace(",]", "],");
-		String fileName = "data_"+timeStamp+".html";
+		String fileName = "priorityQueueGraphs_"+timeStamp+".js";
+		Writer output;
+		try {
+			output = new BufferedWriter(new FileWriter(fileName, true));
+			output.append(line + "\n");
+			System.out.println(buff.toString());
+			output.flush();
+			output.close();
+
+		} catch (IOException e) {
+			System.out.println("Error in print data to file");
+			e.printStackTrace();
+		}
+
+	}
+	
+	public static void saveToHTML(String... result){
+
+
+		if(timeStamp==null){
+			timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+		}
+
+		StringBuffer buff = new StringBuffer();
+		if(result.length>1){
+			buff.append("[");
+			for(int i=0;i<result.length;i++)
+			{
+				buff.append(result[i]);
+				//if(i!=result.length-1)
+				buff.append(",");
+			}
+			buff.append("]");
+		}else
+		{
+			buff.append(result[0]);
+		}
+		String line = buff.toString();
+		if(result.length>1)line = line.replace(",]", "],");
+		String fileName = "index_"+timeStamp+".html";
 		Writer output;
 		try {
 			output = new BufferedWriter(new FileWriter(fileName, true));
@@ -120,27 +159,32 @@ public class TestUtils {
 
 
 		//		startHTML();
-		saveData("<html>");
-		saveData("<head>");
-		saveData("  <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>");
-		saveData("   <script type=\"text/javascript\">");
-		saveData("	 	google.load('visualization', '1.1', {packages: ['line']})");
+		saveToHTML("<html>");
+		saveToHTML("<head>");
+		saveToHTML("  <script type=\"text/javascript\" src=\"https://www.google.com/jsapi\"></script>");
+		saveToHTML("  <script src=\"priorityQueueGraphs_"+timeStamp+".js\">/</script>");
+		saveToHTML("  <script>");		
+		saveToHTML("	 	google.load('visualization', '1.1', {packages: ['line']})");
 
 		List<String> ids = graphSet1(fileName);
 		ids.addAll(graphSet2(fileName));
 		ids.addAll(graphSet3(fileName));
-
+		
+		
+		for(String id:ids){
+			saveToHTML("	google.setOnLoadCallback(drawChart_"+id+");");
+		}
 		//endHTML();
-		saveData("  </script>");
-		saveData("  </head>");
-		saveData("  <body>");
+		saveToHTML("  </script>");
+		saveToHTML("  </head>");
+		saveToHTML("  <body>");
 
 		for(String id:ids){
-			saveData("<div id=\"test"+id+"\"></div>");
-			saveData(" <brbrbrbrbrbrbrbr>");
+			saveToHTML("<div id=\"test"+id+"\"></div>");
+			saveToHTML(" <brbrbrbrbrbrbrbr>");
 		}
-		saveData("</body>");
-		saveData("</html>");
+		saveToHTML("</body>");
+		saveToHTML("</html>");
 	}
 
 
@@ -696,7 +740,7 @@ public class TestUtils {
 
 
 	private void startGraph(String id,boolean flag) {
-		saveData("google.setOnLoadCallback(drawChart_"+id+");");
+//		saveData("google.setOnLoadCallback(drawChart_"+id+");");
 		saveData("function drawChart_"+id+"() {");
 		saveData("      var data = new google.visualization.DataTable();");
 		if(!flag){
