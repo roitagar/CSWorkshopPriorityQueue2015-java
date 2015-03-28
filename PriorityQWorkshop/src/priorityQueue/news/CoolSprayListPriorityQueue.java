@@ -1,6 +1,5 @@
 package priorityQueue.news;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicMarkableReference;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -21,9 +20,8 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	protected ReadWriteLock _lock2; // during delete-group selection - blocks all inserters
 	protected ReadWriteLock _lock3; // during delete-group disconnection and construction - blocks low inserters
 	volatile Integer highestNodeKey;
-	private final boolean _useItemsCounter;
 
-	public CoolSprayListPriorityQueue(int maxAllowedHeight, boolean useItemsCounter, boolean fair) {
+	public CoolSprayListPriorityQueue(int maxAllowedHeight, boolean fair) {
 		_maxAllowedHeight = maxAllowedHeight;
 		_threads = new AtomicInteger(0);
 		_liveItems = new AtomicInteger(0);
@@ -35,7 +33,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		_lock2 = new ReentrantReadWriteLock(fair);
 		_lock3 = new ReentrantReadWriteLock(fair);
 		highestNodeKey = null;
-		_useItemsCounter = useItemsCounter; 
 		for(int i=0;i<=_maxAllowedHeight;i++)
 		{
 			_head.next[i] = new AtomicMarkableReference<CoolSprayListNode>(_tail, false);
@@ -238,7 +235,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		NodesEliminationArray newElimArray;
 		try {
 
-			// Coherency check:
+			// Coherence test:
 			if(_elimArray.hasNodes())
 			{
 				// Someone else performed cleanup and I missed it, go back to empty the elimination array
@@ -287,8 +284,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 					{
 						// No nodes to remove
 						highestNodeKey = null;
-						//_lock2.writeLock().unlock();
-						//_lock3.writeLock().unlock();
 						return false;
 					}
 				}
@@ -433,7 +428,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			int p = _threads.get();
 			int K = 2;
 			int H =  Math.min((int) (Math.log(p)/Math.log(2))+K, _maxAllowedHeight);
-			int L = (int) (/*M * */ Math.pow((Math.log(p)/Math.log(2)),3));
+			int L = (int) (Math.pow((Math.log(p)/Math.log(2)),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
 			result = spray(H,L,D);
 
@@ -462,17 +457,8 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 	@Override
 	public boolean isEmpty() {
-		if(_useItemsCounter)
-		{
 			return _liveItems.get() == 0;
-		}
-		else if(_head.next[0].getReference() == _tail && !_elimArray.hasNodes() /* TODO: && !_cleanerrunning */)
-		{
-			return true;
-		}
-
-		return false;
-	}
+			}
 
 	/**
 	 * for internal use - due to items in elimination array, the list might be empty
@@ -480,12 +466,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	 */
 	protected boolean isSkipListEmpty()
 	{
-		if(_useItemsCounter)
-		{
-			return _itemsInSkipList.get() == 0;
-		}
-
-		return _head.next[0].getReference() == _tail;
+		return _itemsInSkipList.get() == 0;
 	}
 
 	/**
@@ -493,22 +474,17 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	 */
 	protected void logInsertion(boolean revive)
 	{
-		if(_useItemsCounter)
+
+		_liveItems.getAndIncrement();
+		if(!revive)
 		{
-			_liveItems.getAndIncrement();
-			if(!revive)
-			{
-				_itemsInSkipList.getAndIncrement();
-			}
+			_itemsInSkipList.getAndIncrement();
 		}
 	}
 
 	protected void logReinsert()
 	{
-		if(_useItemsCounter)
-		{
-			_itemsInSkipList.getAndIncrement();
-		}
+		_itemsInSkipList.getAndIncrement();
 	}
 
 	/**
@@ -516,8 +492,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	 */
 	protected void logRemoval()
 	{
-		if(_useItemsCounter)
-			_liveItems.getAndDecrement();
+		_liveItems.getAndDecrement();
 	}
 
 	/**
@@ -525,8 +500,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	 */
 	protected void logCleanup(int amount)
 	{
-		if(_useItemsCounter)
-			_itemsInSkipList.getAndAdd(-amount);
+		_itemsInSkipList.getAndAdd(-amount);
 	}
 
 	protected class CoolSprayListNode {

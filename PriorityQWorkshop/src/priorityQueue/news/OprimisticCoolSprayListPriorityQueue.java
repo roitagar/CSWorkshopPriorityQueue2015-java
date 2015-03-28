@@ -5,8 +5,8 @@ public class OprimisticCoolSprayListPriorityQueue extends CoolSprayListPriorityQ
 
 
 
-	public OprimisticCoolSprayListPriorityQueue(int maxAllowedHeight, boolean useItemsCounter, boolean fair) {
-		super(maxAllowedHeight, useItemsCounter, fair);
+	public OprimisticCoolSprayListPriorityQueue(int maxAllowedHeight, boolean fair) {
+		super(maxAllowedHeight, fair);
 	}
 
 	@Override
@@ -27,7 +27,7 @@ public class OprimisticCoolSprayListPriorityQueue extends CoolSprayListPriorityQ
 		NodesEliminationArray newElimArray;
 		try {
 
-			// Coherency check:
+			// Coherence test:
 			if(_elimArray.hasNodes())
 			{
 				// Someone else performed cleanup and I missed it, go back to empty the elimination array
@@ -67,7 +67,7 @@ public class OprimisticCoolSprayListPriorityQueue extends CoolSprayListPriorityQ
 				return false;
 			}
 
-			//Now we have and optimistic list
+			//Now we have an optimistic list
 			// Block inserters for a while and update higestNodeKey
 			_lock2.writeLock().lock(); //promise no inserters in the list at all - for a short time
 			_lock3.writeLock().lock();

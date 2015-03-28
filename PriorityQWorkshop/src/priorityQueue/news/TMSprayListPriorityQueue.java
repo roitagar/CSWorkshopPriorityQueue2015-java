@@ -7,23 +7,21 @@ import org.deuce.Atomic;
 public class TMSprayListPriorityQueue extends SeqSprayListPriorityQueue{
 
 	AtomicInteger _threadCount;
-	boolean _useThreadCounter;
-	public TMSprayListPriorityQueue(int maxAllowedHeight, boolean useThreadCounter) {
+	public TMSprayListPriorityQueue(int maxAllowedHeight) {
 		super(maxAllowedHeight);
 		_threadCount = new AtomicInteger(0);
-		_useThreadCounter = useThreadCounter; 
 	}
 	
 	@Override
 	public boolean insert(int value) {
 		try
 		{
-			if(_useThreadCounter) _threadCount.getAndIncrement();
+			_threadCount.getAndIncrement();
 			return atomicInsert(value);
 		}
 		finally
 		{
-			if(_useThreadCounter) _threadCount.getAndDecrement();
+			_threadCount.getAndDecrement();
 		}
 	}
 	
@@ -36,12 +34,12 @@ public class TMSprayListPriorityQueue extends SeqSprayListPriorityQueue{
 	public int deleteMin() {
 		try
 		{
-			if(_useThreadCounter) _threadCount.getAndIncrement();
+			_threadCount.getAndIncrement();
 			return atomicDeleteMin();
 		}
 		finally
 		{
-			if(_useThreadCounter) _threadCount.getAndDecrement();
+			_threadCount.getAndDecrement();
 		}
 	}
 
@@ -52,6 +50,6 @@ public class TMSprayListPriorityQueue extends SeqSprayListPriorityQueue{
 	
 	@Override
 	protected int getThreadCount() {
-		return _useThreadCounter ? _threadCount.get() : 1;
+		return _threadCount.get();
 	}
 }
