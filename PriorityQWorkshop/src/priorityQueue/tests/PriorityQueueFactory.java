@@ -17,6 +17,12 @@ class NaiveLockNativePriorityQueueFactory extends PriorityQueueFactory {
 	}
 }
 
+class JavaConcurrentPriorityQueueFactory extends PriorityQueueFactory {
+	IPriorityQueue Create(int skiplistHeight) {
+		return new JavaConcurrentPriorityQueue();
+	}
+}
+
 class GlobalLockSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
@@ -48,14 +54,41 @@ class LockFreeSprayListPriorityQueueFactory extends PriorityQueueFactory {
 class CoolSprayListPriorityQueueWithItemsCounterFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight, true);
+		return new CoolSprayListPriorityQueue(skiplistHeight, true,true);
+	}
+}
+class OptimisticCoolSprayListPriorityQueueWithItemsCounterFactory extends PriorityQueueFactory {
+	@Override
+	IPriorityQueue Create(int skiplistHeight) {
+		return new OprimisticCoolSprayListPriorityQueue(skiplistHeight, true,true);
 	}
 }
 
 class CoolSprayListPriorityQueueWithImpreciseIsEmptyFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight, false);
+		return new CoolSprayListPriorityQueue(skiplistHeight, false,true);
+	}
+}
+
+class CoolSprayListPriorityQueueWithItemsCounterNoFairFactory extends PriorityQueueFactory {
+	@Override
+	IPriorityQueue Create(int skiplistHeight) {
+		return new CoolSprayListPriorityQueue(skiplistHeight, true,false);
+	}
+}
+
+class OptimisticCoolSprayListPriorityQueueWithItemsCounterNoFairFactory extends PriorityQueueFactory {
+	@Override
+	IPriorityQueue Create(int skiplistHeight) {
+		return new OprimisticCoolSprayListPriorityQueue(skiplistHeight, true,false);
+	}
+}
+
+class CoolSprayListPriorityQueueWithImpreciseIsEmptyNoFairFactory extends PriorityQueueFactory {
+	@Override
+	IPriorityQueue Create(int skiplistHeight) {
+		return new CoolSprayListPriorityQueue(skiplistHeight, false,false);
 	}
 }
 
