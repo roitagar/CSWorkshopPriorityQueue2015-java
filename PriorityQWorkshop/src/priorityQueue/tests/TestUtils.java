@@ -1004,6 +1004,10 @@ public class TestUtils {
 			long insertCount = Long.parseLong(this.insertCount);
 			long insertTime = Long.parseLong(this.insertTime);
 
+			if(insertTime==0){
+				return "1";
+			}
+			
 			return Long.toString(insertCount/insertTime);	
 		}
 
@@ -1011,6 +1015,11 @@ public class TestUtils {
 			long deleteCount = Long.parseLong(this.deleteCount);
 			long deleteTime = Long.parseLong(this.deleteTime);
 
+			
+			if(deleteTime==0){
+				return "1";
+			}
+			
 			return Long.toString(deleteCount/deleteTime);	
 		}
 
