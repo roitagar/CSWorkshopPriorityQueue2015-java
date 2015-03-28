@@ -94,6 +94,10 @@ class SimpleInsertWorker extends InsertWorker {
 	@Override
 	public void run() {
 		for (int i = _from; i < _from + _amount; i++) {
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			if(_queue.insert(i))
 				_totalPackets++;
 		}
@@ -112,7 +116,10 @@ class SimpleDeleteWorker extends GradedWorkerBase implements Runnable {
 	public void run() {
 		while (!_queue.isEmpty()) {
 			int result;
-
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			result = deleteMin();
 		}
 	}
@@ -147,6 +154,10 @@ class AdvancedInsertAndDelete extends GradedWorkerBase implements Runnable {
 		int value;
 		while( _runs > counter)
 		{
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			result = deleteMin();
 			value = result + _highest;
 			_queue.insert(value);
@@ -194,6 +205,10 @@ class AdvancedInsertWorker extends InsertWorker {
 	{
 		while( !_done.value )
 		{
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			int value = _generator.getNext();
 			if(value>0){
 				if(_queue.insert(value))
@@ -223,9 +238,12 @@ class AdvancedInsertWorkerUntilValue extends InsertWorker {
 	@Override
 	public void run()
 	{
-
 		boolean reallyDone = false;
 		while( !reallyDone ) {
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			reallyDone = true; // if we got the last value we need to finish
 			int value = _generator.getNext();
 
@@ -265,6 +283,10 @@ class AdvancedDeleteWorker extends GradedWorkerBase implements Runnable
 		// if done is triggered and queue is empty, the loop will not set reallyDone back to false, and exit.
 		boolean reallyDone = false;
 		while( !reallyDone ) {
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			reallyDone = _done.value; // if done is marked, we might need to finish
 			int result;
 
@@ -299,6 +321,10 @@ class AdvancedDeleteWorkerWithoutEmptying extends GradedWorkerBase implements Ru
 		// if done is triggered and queue is empty, the loop will not set reallyDone back to false, and exit.
 		boolean done = false;
 		while( !done ) {
+			if(Thread.currentThread().isInterrupted()){
+				System.out.println("Interrupted!!!");
+				break;
+			}
 			done = _done.value; // if done is marked, we might need to finish
 			int result;
 
