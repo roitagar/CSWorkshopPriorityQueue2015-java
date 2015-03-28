@@ -253,8 +253,9 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 		do
 		{
 			int p = _threads.get();
-			int H = (int) Math.log(p)/*+K*/;
-			int L = (int) (/*M * */ Math.pow(Math.log(p),3));
+			int K = 2;
+			int H =  Math.min((int) (Math.log(p)/Math.log(2))+K, _maxAllowedHeight);
+			int L = (int) (/*M * */ Math.pow((Math.log(p)/Math.log(2)),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
 			result = spray(H,L,D);
 			//System.out.println("Thread " + tid + ": After spray got "+ result);
