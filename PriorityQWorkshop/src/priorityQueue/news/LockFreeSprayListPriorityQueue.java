@@ -120,7 +120,7 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 					boolean[] marked = {false};
 					succ = nodeToRemove.next[level].get(marked);
 					while (!marked[0]) {
-						nodeToRemove.next[level].attemptMark(succ, true);
+						nodeToRemove.next[level].compareAndSet(succ, succ, false, true);
 						succ = nodeToRemove.next[level].get(marked);
 					}
 				}
