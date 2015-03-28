@@ -222,6 +222,9 @@ public class maintest {
 	public static TestBench testBench2 = new TestBench() {
 		@Override
 		public void run() {
+			PaddedPrimitiveNonVolatile<Boolean> doneWorkers = new PaddedPrimitiveNonVolatile<Boolean>(false);
+			PaddedPrimitive<Boolean> memFence = new PaddedPrimitive<Boolean>(false);
+			
 			InsertWorker[] insertWorkers = new SimpleInsertWorker[_numInsertWorkers]; 
 			_insertWorkerThreads = new Thread[_numInsertWorkers];
 			for(int i=0; i < _numInsertWorkers; i++)
@@ -230,21 +233,27 @@ public class maintest {
 				_insertWorkerThreads[i] = new Thread(insertWorkers[i]);
 			}
 
-			SimpleDeleteWorker[] deleteWorkers = new  SimpleDeleteWorker[_numDeleteWorkers]; 
+			AdvancedDeleteWorker[] deleteWorkers = new  AdvancedDeleteWorker[_numDeleteWorkers]; 
 			_deleteWorkerThreads = new Thread[_numDeleteWorkers];
 
 			for(int i=0;i<_numDeleteWorkers; i++)
 			{
-				deleteWorkers[i] = new SimpleDeleteWorker(_queue);
+				deleteWorkers[i] = new AdvancedDeleteWorker(doneWorkers, _queue);
 				_deleteWorkerThreads[i] = new Thread(deleteWorkers[i]);
 			}
 
 			startAllWorkers();
 
 			joinInsertWorkers();
+			
+			// Stop delete Workers - they are responsible for leaving the queue empty
+			doneWorkers.value = true;
+			memFence.value = true; // memFence is a 'volatile' forcing a memory fence
+			// which means that done.value is visible to the workers
 
 			joinDeleteWorkers();
-
+			
+			
 			//get grade of each worker
 			int[] grade = new int[_numDeleteWorkers];
 			for(int i=0; i<_numDeleteWorkers;i++){
