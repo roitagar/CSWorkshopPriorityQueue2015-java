@@ -17,9 +17,9 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	protected CoolSprayListNode _head;
 	protected CoolSprayListNode _tail;
 	protected volatile NodesEliminationArray _elimArray;
-	private ReentrantLock _lock1; // during the entire cleanup - allows only one cleaner
-	private ReadWriteLock _lock2; // during delete-group selection - blocks all inserters
-	private ReadWriteLock _lock3; // during delete-group disconnection and construction - blocks low inserters
+	protected ReentrantLock _lock1; // during the entire cleanup - allows only one cleaner
+	protected ReadWriteLock _lock2; // during delete-group selection - blocks all inserters
+	protected ReadWriteLock _lock3; // during delete-group disconnection and construction - blocks low inserters
 	volatile Integer highestNodeKey;
 	private final boolean _useItemsCounter;
 	
@@ -483,7 +483,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	 * for internal use - due to items in elimination array, the list might be empty
 	 * even when the queue is not empty
 	 */
-	private boolean isSkipListEmpty()
+	protected boolean isSkipListEmpty()
 	{
 		if(_useItemsCounter)
 		{
@@ -496,7 +496,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	/**
 	 * inform a successful insertion
 	 */
-	private void logInsertion(boolean revive)
+	protected void logInsertion(boolean revive)
 	{
 		if(_useItemsCounter)
 		{
@@ -508,7 +508,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		}
 	}
 	
-	private void logReinsert()
+	protected void logReinsert()
 	{
 		if(_useItemsCounter)
 		{
@@ -519,7 +519,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	/**
 	 * inform a successful logical removal
 	 */
-	private void logRemoval()
+	protected void logRemoval()
 	{
 		if(_useItemsCounter)
 			_liveItems.getAndDecrement();
@@ -528,7 +528,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	/**
 	 * inform a successful batch cleanup
 	 */
-	private void logCleanup(int amount)
+	protected void logCleanup(int amount)
 	{
 		if(_useItemsCounter)
 			_itemsInSkipList.getAndAdd(-amount);
@@ -589,7 +589,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		}
 	}
 	
-	private class NodesEliminationArray {
+	protected class NodesEliminationArray {
 		private CoolSprayListNode[] arr;
 		private AtomicInteger deleteMinCounter; // token allocator
 		private AtomicInteger reInsertCounter; // token allocator
