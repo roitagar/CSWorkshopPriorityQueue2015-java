@@ -2,11 +2,11 @@ package priorityQueue.news;
 
 import java.util.concurrent.PriorityBlockingQueue;
 
-public class JavaConcurrentPriorityQueue implements IPriorityQueue {
+public class JavaPriorityBlockingQueue implements IPriorityQueue {
 
 	private final PriorityBlockingQueue<Integer> _queue;
 	
-	public JavaConcurrentPriorityQueue() {
+	public JavaPriorityBlockingQueue() {
 		_queue = new PriorityBlockingQueue<Integer>();
 	}
 	@Override
