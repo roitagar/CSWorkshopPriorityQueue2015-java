@@ -48,8 +48,6 @@ public class TestUtils {
 			System.out.println(buff.toString());
 			output.flush();
 			output.close();
-			
-			System.out.println(buff.toString());
 
 		} catch (IOException e) {
 			System.out.println("Error in print result to file");
