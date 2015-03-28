@@ -185,12 +185,12 @@ public class TestUtils {
 							currentRow = new ChartRow(5);
 						}
 						
-						if(rowEntry.getQueueType().equals("JavaPriorityBockingQueue")){
-							currentRow.JavaPriorityBockingQueue_val[0]=rowEntry.getInsertThroughput();
-							currentRow.JavaPriorityBockingQueue_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.JavaPriorityBockingQueue_val[2]=rowEntry.getThroughputRatio();
-							currentRow.JavaPriorityBockingQueue_val[3]=rowEntry.getAvgGrade();
-							currentRow.JavaPriorityBockingQueue_val[4]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("JavaPriorityBlockingQueue")){
+							currentRow.JavaPriorityBlockingQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.JavaPriorityBlockingQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.JavaPriorityBlockingQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.JavaPriorityBlockingQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.JavaPriorityBlockingQueue_val[4]=rowEntry.getVarianceGrade();
 						}
 						
 						if(rowEntry.getQueueType().equals("NaiveLockNativePriorityQueue")){
@@ -301,7 +301,7 @@ public class TestUtils {
 					startGraph(id,false);
 
 					for(Entry<String, ChartRow> en: chartData.entrySet()){
-						saveData(en.getKey(),en.getValue().JavaPriorityBockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
+						saveData(en.getKey(),en.getValue().JavaPriorityBlockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
 					}
 
 					endGraph(id,i, false);
@@ -358,11 +358,11 @@ public class TestUtils {
 							currentRow = new ChartRow(4);
 						}
 						
-						if(rowEntry.getQueueType().equals("JavaPriorityBockingQueue")){
-							currentRow.JavaPriorityBockingQueue_val[0]=rowEntry.getInsertThroughput();
-							currentRow.JavaPriorityBockingQueue_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.JavaPriorityBockingQueue_val[2]=rowEntry.getThroughputRatio();
-							currentRow.JavaPriorityBockingQueue_val[3]=rowEntry.getAvgGrade();
+						if(rowEntry.getQueueType().equals("JavaPriorityBlockingQueue")){
+							currentRow.JavaPriorityBlockingQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.JavaPriorityBlockingQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.JavaPriorityBlockingQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.JavaPriorityBlockingQueue_val[3]=rowEntry.getAvgGrade();
 						}
 
 						if(rowEntry.getQueueType().equals("NaiveLockNativePriorityQueue")){
@@ -460,7 +460,7 @@ public class TestUtils {
 					startGraph(id,true);
 
 					for(Entry<String, ChartRow> en: chartData.entrySet()){
-						saveData(en.getKey(),en.getValue().JavaPriorityBockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
+						saveData(en.getKey(),en.getValue().JavaPriorityBlockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
 					}
 					endGraph(id,i, true);
 				}
@@ -510,12 +510,12 @@ public class TestUtils {
 							currentRow = new ChartRow(5);
 						}
 						
-						if(rowEntry.getQueueType().equals("JavaPriorityBockingQueue")){
-							currentRow.JavaPriorityBockingQueue_val[0]=rowEntry.getInsertThroughput();
-							currentRow.JavaPriorityBockingQueue_val[1]=rowEntry.getDeleteThroughput();
-							currentRow.JavaPriorityBockingQueue_val[2]=rowEntry.getThroughputRatio();
-							currentRow.JavaPriorityBockingQueue_val[3]=rowEntry.getAvgGrade();
-							currentRow.JavaPriorityBockingQueue_val[4]=rowEntry.getVarianceGrade();
+						if(rowEntry.getQueueType().equals("JavaPriorityBlockingQueue")){
+							currentRow.JavaPriorityBlockingQueue_val[0]=rowEntry.getInsertThroughput();
+							currentRow.JavaPriorityBlockingQueue_val[1]=rowEntry.getDeleteThroughput();
+							currentRow.JavaPriorityBlockingQueue_val[2]=rowEntry.getThroughputRatio();
+							currentRow.JavaPriorityBlockingQueue_val[3]=rowEntry.getAvgGrade();
+							currentRow.JavaPriorityBlockingQueue_val[4]=rowEntry.getVarianceGrade();
 						}
 						
 						if(rowEntry.getQueueType().equals("NaiveLockNativePriorityQueue")){
@@ -625,7 +625,7 @@ public class TestUtils {
 					startGraph(id,false);
 
 					for(Entry<String, ChartRow> en: chartData.entrySet()){
-						saveData(en.getKey(), en.getValue().JavaPriorityBockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
+						saveData(en.getKey(), en.getValue().JavaPriorityBlockingQueue_val[i], en.getValue().NaiveLockNativePriorityQueue_val[i], en.getValue().LazyLockSparyListPriorityQueue_val[i], en.getValue().GlobalLockSprayListPriorityQueue_val[i], en.getValue().LockFreeSprayListPriorityQueue_val[i], en.getValue().TMSprayListPriorityQueue_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueue_val[i], en.getValue().CoolSprayListPriorityQueueFairLock_val[i], en.getValue().OptimisticCoolSprayListPriorityQueueFairLock_val[i], en.getValue().GlobalLockSprayListPriorityQueue_CPP_val[i], en.getValue().LazyLockSparyListPriorityQueue_CPP_val[i], en.getValue().CoolSprayListPriorityQueue_CPP_val[i], en.getValue().OptimisticCoolSprayListPriorityQueue_CPP_val[i]);
 					}
 					endGraph(id,i, false);
 				}
@@ -705,7 +705,7 @@ public class TestUtils {
 		else{
 			saveData("      data.addColumn('string', 'Threads(Insert,Delete)');");
 		}
-		saveData("      data.addColumn('number', 'JavaPriorityBockingQueue');");
+		saveData("      data.addColumn('number', 'JavaPriorityBlockingQueue');");
 		saveData("      data.addColumn('number', 'NaiveLockNativePriorityQueue');");
 		saveData("      data.addColumn('number', 'LazyLockSparyListPriorityQueue');");
 		saveData("      data.addColumn('number', 'GlobalLockSprayListPriorityQueue');");
@@ -767,7 +767,7 @@ public class TestUtils {
 	public class ChartRow{
 
 		//		insert,delete, avg, var;
-		String[] JavaPriorityBockingQueue_val;
+		String[] JavaPriorityBlockingQueue_val;
 		String[] NaiveLockNativePriorityQueue_val;
 		String[] LazyLockSparyListPriorityQueue_val;
 		String[] GlobalLockSprayListPriorityQueue_val;
@@ -784,7 +784,7 @@ public class TestUtils {
 		
 
 		public ChartRow(int size){
-			JavaPriorityBockingQueue_val = new String[size];
+			JavaPriorityBlockingQueue_val = new String[size];
 			NaiveLockNativePriorityQueue_val = new String[size];
 			LazyLockSparyListPriorityQueue_val = new String[size];
 			GlobalLockSprayListPriorityQueue_val = new String[size];
