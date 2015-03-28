@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicMarkableReference;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
@@ -16,13 +17,13 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 	protected CoolSprayListNode _head;
 	protected CoolSprayListNode _tail;
 	protected volatile NodesEliminationArray _elimArray;
-	private ReadWriteLock _lock1; // during the entire cleanup - allows only one cleaner
+	private ReentrantLock _lock1; // during the entire cleanup - allows only one cleaner
 	private ReadWriteLock _lock2; // during delete-group selection - blocks all inserters
 	private ReadWriteLock _lock3; // during delete-group disconnection and construction - blocks low inserters
 	volatile Integer highestNodeKey;
 	private final boolean _useItemsCounter;
 	
-	public CoolSprayListPriorityQueue(int maxAllowedHeight, boolean useItemsCounter) {
+	public CoolSprayListPriorityQueue(int maxAllowedHeight, boolean useItemsCounter, boolean fair) {
 		_maxAllowedHeight = maxAllowedHeight;
 		_threads = new AtomicInteger(0);
 		_liveItems = new AtomicInteger(0);
@@ -30,12 +31,11 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		_head = new CoolSprayListNode(Integer.MIN_VALUE, maxAllowedHeight);
 		_tail = new CoolSprayListNode(Integer.MAX_VALUE, maxAllowedHeight);
 		_elimArray = new NodesEliminationArray(0);
-		_lock1 = new ReentrantReadWriteLock(true);
-		_lock2 = new ReentrantReadWriteLock(true);
-		_lock3 = new ReentrantReadWriteLock(true);
+		_lock1 = new ReentrantLock();
+		_lock2 = new ReentrantReadWriteLock(fair);
+		_lock3 = new ReentrantReadWriteLock(fair);
 		highestNodeKey = null;
 		_useItemsCounter = useItemsCounter; 
-		
 		for(int i=0;i<=_maxAllowedHeight;i++)
 		{
 			_head.next[i] = new AtomicMarkableReference<CoolSprayListNode>(_tail, false);
@@ -78,12 +78,13 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		boolean reinsert = false; // determine insertion phase
 		CoolSprayListNode[] preds = new CoolSprayListNode[_maxAllowedHeight+1];
 		CoolSprayListNode[] succs = new CoolSprayListNode[_maxAllowedHeight+1];
+		Integer temp = null;
 
 		// Don't interfere with deciding a delete-group
 		_lock2.readLock().lock();
 		try {
 			/*in this case we have to wait */
-			Integer temp = highestNodeKey; // local copy to avoid a race condition with assignment of null value
+			temp = highestNodeKey; // local copy to avoid a race condition with assignment of null value
 			if (temp != null && value <temp){
 				shouldReleaseLock3 = true;
 				// Don't interfere with disconnecting and building a delete-group
@@ -116,7 +117,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				}
 
 				NodeStatus status = find(value, preds, succs);
-
 				if(!reinsert && status == NodeStatus.FOUND) {
 					/* linearization point of unsuccessful insertion */
 					return false;
@@ -189,21 +189,24 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 						if (pred.next[level].compareAndSet(succ, newNode, false, false)){
 							break; 
 						}	
-						find(value, preds, succs);	 
+						find(value, preds, succs);
 					}
 				}
-				
-				if(!reinsert)
+				if (reinsert) {
+					// change node status from ALIVE_IN_ELIMINATION to ALIVE
+					//linearization point for reinsert
+					newNode.reinsert();
+				}
+				else
 				{
 					// successful insertion completed, now check if we need to help fix linearization by
 					// reinserting a high-valued node from the elimination array to the skiplist 
 					newNode = _elimArray.getNodeForReinsert(value);
-					reinsert = newNode != null;
+					reinsert = (newNode != null);
 					if(reinsert)
 					{
 						value = newNode.value;
 						topLevel = newNode.topLevel();
-						
 						// repeat insertion with the reinsert node
 						continue;
 					}
@@ -226,7 +229,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 
 	protected boolean clean() {
 		// Allow only a single cleaner, but don't block
-		if (!_lock1.writeLock().tryLock())
+		if (!_lock1.tryLock())
 		{
 			return false;
 		}
@@ -245,8 +248,9 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			_lock3.writeLock().lock();
 
 			/* Determine the max number of Healthy element you want to traverse */
-			int numOfHealtyNodes = 10; // TODO: Determine it for a variable
-
+			int p = _threads.get();
+			p = p*(int)(Math.log(p)/Math.log(2)) + 1;
+			int numOfHealtyNodes = p; // TODO: Determine it for a variable
 			/* Create an Elimination Array in this size */
 			NodesEliminationArray newElimArray = new NodesEliminationArray(numOfHealtyNodes);
 
@@ -284,7 +288,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 				_lock3.writeLock().unlock();
 				return false;
 			}
-
 			_lock2.writeLock().unlock(); // high-valued inserts can go on
 
 			// Now you have a range that you want to delete. mark the highest node's markable reference in all levels,
@@ -303,8 +306,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 			for (int level=0; level <= highest.topLevel(); level++) {
 				_head.next[level].set(highest.next[level].getReference(), false);
 			}
-
-
 			/* Now  - mark each alive node in the group as belong to elimination array and add it to the elimination array */
 			curr = firstNode;
 			boolean done = false;
@@ -337,7 +338,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		}
 
 		finally{
-			_lock1.writeLock().unlock();
+			_lock1.unlock();
 			// TODO: safely-unlock the other locks?
 		}
 
@@ -424,7 +425,7 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		
 			// Attempt cleanup
 			int tmp = serviceClass.randomStep(100);
-			if(tmp < 7 /* TODO: cleanup conditions? */)
+			if(tmp < 3 /* TODO: cleanup conditions? */)
 			{
 				if(clean())
 				{
@@ -638,7 +639,6 @@ public class CoolSprayListPriorityQueue implements IPriorityQueue {
 		
 		//Traverse the array from highest to lowest
 		public CoolSprayListNode getNodeForReinsert(int insertedValue) {
-			
 			int i = reInsertCounter.get() - 1; // speculated reinsert token for value test
 			int nextEliminatedIndex = numOfNodes - deleteMinCounter.get(); 
 			if(i < nextEliminatedIndex || arr[i].value < insertedValue)
