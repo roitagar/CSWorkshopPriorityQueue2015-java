@@ -53,7 +53,6 @@ public class TestUtils {
 
 		} catch (IOException e) {
 			System.out.println("Error in print result to file");
-			e.printStackTrace();
 		}
 
 	}
@@ -93,7 +92,6 @@ public class TestUtils {
 
 		} catch (IOException e) {
 			System.out.println("Error in print data to file");
-			e.printStackTrace();
 		}
 
 	}
@@ -132,7 +130,6 @@ public class TestUtils {
 
 		} catch (IOException e) {
 			System.out.println("Error in print data to file");
-			e.printStackTrace();
 		}
 
 	}
