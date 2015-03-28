@@ -10,16 +10,16 @@ abstract class PriorityQueueFactory {
 	}
 }
 
+class JavaPriorityBlockingQueueFactory extends PriorityQueueFactory {
+	IPriorityQueue Create(int skiplistHeight) {
+		return new JavaPriorityBlockingQueue();
+	}
+}
+
 class NaiveLockNativePriorityQueueFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
 		return new NaiveLockNativePriorityQueue();
-	}
-}
-
-class JavaConcurrentPriorityQueueFactory extends PriorityQueueFactory {
-	IPriorityQueue Create(int skiplistHeight) {
-		return new JavaConcurrentPriorityQueue();
 	}
 }
 
@@ -30,17 +30,10 @@ class GlobalLockSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	}
 }
 
-class TMSprayListPriorityQueueWithCounterFactory extends PriorityQueueFactory {
+class TMSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new TMSprayListPriorityQueue(skiplistHeight, true);
-	}
-}
-
-class TMSprayListPriorityQueueWithoutCounterFactory extends PriorityQueueFactory {
-	@Override
-	IPriorityQueue Create(int skiplistHeight) {
-		return new TMSprayListPriorityQueue(skiplistHeight, false);
+		return new TMSprayListPriorityQueue(skiplistHeight);
 	}
 }
 
@@ -51,44 +44,31 @@ class LockFreeSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	}
 }
 
-class CoolSprayListPriorityQueueWithItemsCounterFactory extends PriorityQueueFactory {
+class CoolSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight, true,true);
-	}
-}
-class OptimisticCoolSprayListPriorityQueueWithItemsCounterFactory extends PriorityQueueFactory {
-	@Override
-	IPriorityQueue Create(int skiplistHeight) {
-		return new OprimisticCoolSprayListPriorityQueue(skiplistHeight, true,true);
+		return new CoolSprayListPriorityQueue(skiplistHeight,false);
 	}
 }
 
-class CoolSprayListPriorityQueueWithImpreciseIsEmptyFactory extends PriorityQueueFactory {
+class CoolSprayListPriorityQueueFairLockFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight, false,true);
+		return new CoolSprayListPriorityQueue(skiplistHeight,true);
 	}
 }
 
-class CoolSprayListPriorityQueueWithItemsCounterNoFairFactory extends PriorityQueueFactory {
+class OptimisticCoolSprayListPriorityQueueFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight, true,false);
+		return new OprimisticCoolSprayListPriorityQueue(skiplistHeight, false);
 	}
 }
 
-class OptimisticCoolSprayListPriorityQueueWithItemsCounterNoFairFactory extends PriorityQueueFactory {
+class OptimisticCoolSprayListPriorityQueueFairLockFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
-		return new OprimisticCoolSprayListPriorityQueue(skiplistHeight, true,false);
-	}
-}
-
-class CoolSprayListPriorityQueueWithImpreciseIsEmptyNoFairFactory extends PriorityQueueFactory {
-	@Override
-	IPriorityQueue Create(int skiplistHeight) {
-		return new CoolSprayListPriorityQueue(skiplistHeight, false,false);
+		return new OprimisticCoolSprayListPriorityQueue(skiplistHeight, true);
 	}
 }
 
@@ -96,13 +76,5 @@ class LazyLockSparyListPriorityQueueFactory extends PriorityQueueFactory {
 	@Override
 	IPriorityQueue Create(int skiplistHeight) {
 		return new LazyLockSparyListPriorityQueue(skiplistHeight);
-	}
-}
-
-// TODO: is this required?
-class SeqSprayListPriorityQueueFactory extends PriorityQueueFactory {
-	@Override
-	IPriorityQueue Create(int skiplistHeight) {
-		return new SeqSprayListPriorityQueue(skiplistHeight);
 	}
 }

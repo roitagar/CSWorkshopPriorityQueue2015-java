@@ -23,15 +23,16 @@ public class maintest {
 		IPriorityQueue pq = null;
 
 		PriorityQueueFactory[] factories = {
+				new JavaPriorityBlockingQueueFactory(),
 				new NaiveLockNativePriorityQueueFactory(),
 				new GlobalLockSprayListPriorityQueueFactory(),
-				new TMSprayListPriorityQueueWithCounterFactory(),
-				new TMSprayListPriorityQueueWithoutCounterFactory(),
+				new TMSprayListPriorityQueueFactory(),
 				new LockFreeSprayListPriorityQueueFactory(),
-				new CoolSprayListPriorityQueueWithItemsCounterFactory(),
-				new CoolSprayListPriorityQueueWithImpreciseIsEmptyFactory(),
-				new LazyLockSparyListPriorityQueueFactory(),
-//				new SeqSprayListPriorityQueueFactory(), // TODO: Remove? this does not support multithreading
+				new CoolSprayListPriorityQueueFactory(),
+				new CoolSprayListPriorityQueueFairLockFactory(),
+				new OptimisticCoolSprayListPriorityQueueFactory(),
+				new OptimisticCoolSprayListPriorityQueueFairLockFactory(),
+				new LazyLockSparyListPriorityQueueFactory()
 		};
 		
 		TestBench[] simultaneousTests = {
