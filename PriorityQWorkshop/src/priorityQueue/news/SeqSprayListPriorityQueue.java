@@ -163,7 +163,7 @@ public class SeqSprayListPriorityQueue implements IPriorityQueue {
 		do
 		{
 			int p = getThreadCount();
-			int K = 2;
+			int K = 0;
 			int H =  Math.min((int) (Math.log(p)/Math.log(2))+K, _maxAllowedHeight);
 			int L = (int) (/*M * */ Math.pow((Math.log(p)/Math.log(2)),3));
 			int D = 1; /* Math.max(1, log(log(p))) */

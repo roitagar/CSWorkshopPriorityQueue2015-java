@@ -27,7 +27,7 @@ public class maintest {
 				new NaiveLockNativePriorityQueueFactory(),
 				new GlobalLockSprayListPriorityQueueFactory(),
 				new TMSprayListPriorityQueueFactory(),
-				new LockFreeSprayListPriorityQueueFactory(),
+//				new LockFreeSprayListPriorityQueueFactory(),
 				new CoolSprayListPriorityQueueFactory(),
 				new CoolSprayListPriorityQueueFairLockFactory(),
 				new OptimisticCoolSprayListPriorityQueueFactory(),
