@@ -14,7 +14,7 @@ public class maintest {
 
 	public static void main(String[] args) {
 
-		final int skiplistHeight = 10;
+		final int skiplistHeight = 16;
 		final int highestOnQueue = 100000;
 		final int timeOutMillisecond = 500;
 		
@@ -27,7 +27,7 @@ public class maintest {
 				new NaiveLockNativePriorityQueueFactory(),
 				new GlobalLockSprayListPriorityQueueFactory(),
 				new TMSprayListPriorityQueueFactory(),
-//				new LockFreeSprayListPriorityQueueFactory(),
+				new LockFreeSprayListPriorityQueueFactory(),
 				new CoolSprayListPriorityQueueFactory(),
 				new CoolSprayListPriorityQueueFairLockFactory(),
 				new OptimisticCoolSprayListPriorityQueueFactory(),
@@ -60,8 +60,8 @@ public class maintest {
 		
 		for(PriorityQueueFactory factory:factories)
 		{
-			int[][] inserters	= {{1, 2, 3, 4, 1, 7, 1, 3}, {1, 2, 3, 4, 5, 6, 7, 8}};
-			int[][] deleters	= {{1, 2, 3, 4, 7, 1, 3, 1}, {1, 2, 3, 4, 5, 6, 7, 8}};
+			int[][] inserters	= {{1, 2, 5, 10, 20, 40, 10, 50, 10, 20}, {1, 2, 5, 10, 15, 20, 30, 40, 60, 80}};
+			int[][] deleters	= {{1, 2, 5, 10, 20, 40, 50, 10, 20, 10}, {1, 2, 5, 10, 15, 20, 30, 40, 60, 80}};
 			for(int i=0;i<inserters.length;i++)
 			{
 				// Print headers // TODO: Remove?
