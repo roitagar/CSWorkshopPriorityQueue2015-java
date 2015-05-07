@@ -30,11 +30,12 @@ public class TestUtils {
 	@Test
 	public void generateGraphs(){
 
-		//		String queues[] = {"JavaPriorityBlockingQueue", "NaiveLockNativePriorityQueue", "LazyLockSparyListPriorityQueue", "GlobalLockSprayListPriorityQueue", "LockFreeSprayListPriorityQueue","TMSprayListPriorityQueue", "CoolSprayListPriorityQueue","CoolSprayListPriorityQueueFairLock" ,"OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock", "GlobalLockSprayListPriorityQueue_CPP", "LazyLockSparyListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "OptimisticCoolSprayListPriorityQueue_CPP"};
+		//	String queues[] = {"JavaPriorityBlockingQueue", "NaiveLockNativePriorityQueue", "LazyLockSparyListPriorityQueue", "GlobalLockSprayListPriorityQueue", "LockFreeSprayListPriorityQueue","TMSprayListPriorityQueue", "CoolSprayListPriorityQueue","CoolSprayListPriorityQueueFairLock" ,"OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock", "GlobalLockSprayListPriorityQueue_CPP", "LazyLockSparyListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "OptimisticCoolSprayListPriorityQueue_CPP"};
+		String queues[] = { "GlobalLockSprayListPriorityQueue" ,"TMSprayListPriorityQueue", "CoolSprayListPriorityQueue","CoolSprayListPriorityQueueFairLock" ,"OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock","LockFreeSprayListPriorityQueue", "GlobalLockSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueueFairLock_CPP"};
 		//String queues[] = {"JavaPriorityBlockingQueue", "NaiveLockNativePriorityQueue","GlobalLockSprayListPriorityQueue", "TMSprayListPriorityQueue", "LazyLockSparyListPriorityQueue", "CoolSprayListPriorityQueue","CoolSprayListPriorityQueueFairLock" ,"OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock",  "LockFreeSprayListPriorityQueue", "GlobalLockSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueueFairLock_CPP"};
 		//String queues[] = {"CoolSprayListPriorityQueue", "CoolSprayListPriorityQueueFairLock", "OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock"};
 		//String queues[] = {"CoolSprayListPriorityQueue", "CoolSprayListPriorityQueueFairLock", "OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock"};
-		String queues[] = {"GlobalLockSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueueFairLock_CPP"};
+		//String queues[] = {"GlobalLockSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueueFairLock_CPP"};
 		String fileName = "results_all_with_java.txt";
 
 		testBenchesNames.put("B_0", "testBench2");
@@ -64,7 +65,7 @@ public class TestUtils {
 		String[][][] testsScenatios1 = {{{"1","1"}, {"2","2"} , {"5","5"}, {"10","10"}, {"20","20"}, {"40","40"}}};
 		String[] tests1 = {"0","1","3","4","5","6"};
 		List<String> ids = graphSet(fileName, queues, "B", testsScenatios1, tests1, "0", false);
-		String[][][] testsScenatios2 = {{ {"1","1"}, {"10","20"} , {"10","70"} }, { {"1","1"}, {"20","10"} , {"70","10"} }};
+		String[][][] testsScenatios2 = {{ {"1","1"}, {"10","20"} , {"10","50"} }, { {"1","1"}, {"20","10"} , {"50","10"} }};
 		String[] tests2 = {"0","1","3","4","5","6"};
 		ids.addAll(graphSet(fileName, queues, "B", testsScenatios2, tests2, "0", true));
 		String[][][] testsScenatios3 = {{{"1","1"}, {"2","2"} , {"5","5"}, {"10","10"}, {"15","15"}, {"20","20"}, {"30","30"} ,{"40","40"}, {"60","60"} ,{"80","80"}}};
