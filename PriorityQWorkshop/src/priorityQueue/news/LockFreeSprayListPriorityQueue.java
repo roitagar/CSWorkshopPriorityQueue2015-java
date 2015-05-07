@@ -75,8 +75,25 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 				 */
 				for (int level= 1; level <= topLevel; level++) {
 					while (true) {
+						if(newNode.next[level].isMarked())
+						{
+							// This node is deleted, no point going further
+							break;
+						}
 						pred = preds[level];
 						succ = succs[level];
+						
+						// connect the new node to the next successor
+						// CAN'T USE 'SET' FUNCTION, THE NODE IS IN THE LIST AND MAYBE BEING REMOVED!!
+						LockFreeSprayListNode tmp = newNode.next[level].getReference(); 
+						if(!newNode.next[level].compareAndSet(tmp, succ, false, false))
+						{
+							// nobody is touching references in this level yet...
+							// failure is possible only if someone is deleting this node
+							// if this is being deleted, don't add it to the list
+							break;
+						}
+						
 						if (pred.next[level].compareAndSet(succ, newNode, false, false)){
 							break; 
 						}	
@@ -249,7 +266,6 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 		_threads.incrementAndGet();
 		boolean retry = false;
 		int result;
-		//long tid = Thread.currentThread().getId();
 		do
 		{
 			int p = _threads.get();
@@ -258,7 +274,6 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 			int L = (int) (/*M * */ Math.pow((Math.log(p)/Math.log(2)),3));
 			int D = 1; /* Math.max(1, log(log(p))) */
 			result = spray(H,L,D);
-			//System.out.println("Thread " + tid + ": After spray got "+ result);
 			if(result == Integer.MAX_VALUE)
 			{
 				// if we got tail's value, the list might be empty
@@ -268,7 +283,6 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 			{
 				retry = !remove(result);
 				//(retry = true) means that another thread performed an action that affect the remove
-				//System.out.println("Thread " + tid + ": After remove " + result + " got retry="+ retry);
 			}
 		} while(retry);
 		_threads.decrementAndGet();
@@ -277,8 +291,8 @@ public class LockFreeSprayListPriorityQueue implements IPriorityQueue {
 	
 	
 	public static final class LockFreeSprayListNode {
-		int value;
-		AtomicMarkableReference<LockFreeSprayListNode>[] next;
+		final int value;
+		final AtomicMarkableReference<LockFreeSprayListNode>[] next;
 		
 		public LockFreeSprayListNode(int value, int height) {
 			this.value = value;
