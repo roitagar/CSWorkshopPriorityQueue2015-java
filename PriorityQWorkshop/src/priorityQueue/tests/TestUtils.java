@@ -9,6 +9,7 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,9 +31,11 @@ public class TestUtils {
 	public void generateGraphs(){
 
 		//		String queues[] = {"JavaPriorityBlockingQueue", "NaiveLockNativePriorityQueue", "LazyLockSparyListPriorityQueue", "GlobalLockSprayListPriorityQueue", "LockFreeSprayListPriorityQueue","TMSprayListPriorityQueue", "CoolSprayListPriorityQueue","CoolSprayListPriorityQueueFairLock" ,"OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock", "GlobalLockSprayListPriorityQueue_CPP", "LazyLockSparyListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "OptimisticCoolSprayListPriorityQueue_CPP"};
-		String queues[] = {"CoolSprayListPriorityQueue", "CoolSprayListPriorityQueueFairLock", "OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock"};
-
-		String fileName = "final-with-java.txt";
+		//String queues[] = {"JavaPriorityBlockingQueue", "NaiveLockNativePriorityQueue","GlobalLockSprayListPriorityQueue", "TMSprayListPriorityQueue", "LazyLockSparyListPriorityQueue", "CoolSprayListPriorityQueue","CoolSprayListPriorityQueueFairLock" ,"OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock",  "LockFreeSprayListPriorityQueue", "GlobalLockSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueueFairLock_CPP"};
+		//String queues[] = {"CoolSprayListPriorityQueue", "CoolSprayListPriorityQueueFairLock", "OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock"};
+		//String queues[] = {"CoolSprayListPriorityQueue", "CoolSprayListPriorityQueueFairLock", "OptimisticCoolSprayListPriorityQueue", "OptimisticCoolSprayListPriorityQueueFairLock"};
+		String queues[] = {"GlobalLockSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueue_CPP", "CoolSprayListPriorityQueueFairLock_CPP"};
+		String fileName = "results_all_with_java.txt";
 
 		testBenchesNames.put("B_0", "testBench2");
 		testBenchesNames.put("B_1", "testBench5");
@@ -58,16 +61,15 @@ public class TestUtils {
 		saveToHTML("  <script>");		
 		saveToHTML("	 	google.load('visualization', '1.1', {packages: ['line']})");
 
-		String[][][] testsScenatios1 = {{{"1","1"}, {"2","2"} , {"3","3"}, {"4","4"}}};
+		String[][][] testsScenatios1 = {{{"1","1"}, {"2","2"} , {"5","5"}, {"10","10"}, {"20","20"}, {"40","40"}}};
 		String[] tests1 = {"0","1","3","4","5","6"};
 		List<String> ids = graphSet(fileName, queues, "B", testsScenatios1, tests1, "0", false);
-		String[][][] testsScenatios2 = {{ {"1","1"}, {"1","3"} , {"1","7"} }, { {"1","1"}, {"3","1"} , {"7","1"} }};
+		String[][][] testsScenatios2 = {{ {"1","1"}, {"10","20"} , {"10","70"} }, { {"1","1"}, {"20","10"} , {"70","10"} }};
 		String[] tests2 = {"0","1","3","4","5","6"};
 		ids.addAll(graphSet(fileName, queues, "B", testsScenatios2, tests2, "0", true));
-		String[][][] testsScenatios3 = {{{"1","1"}, {"2","2"} , {"3","3"}, {"4","4"}, {"5","5"}, {"6","6"}, {"7","7"} ,{"8","8"}}};
+		String[][][] testsScenatios3 = {{{"1","1"}, {"2","2"} , {"5","5"}, {"10","10"}, {"15","15"}, {"20","20"}, {"30","30"} ,{"40","40"}, {"60","60"} ,{"80","80"}}};
 		String[] tests3 = {"0","1","2","3","4","5"};
 		ids.addAll(graphSet(fileName, queues, "C", testsScenatios3, tests3, "1", false));
-
 
 		for(String id:ids){
 			saveToHTML("	google.setOnLoadCallback(drawChart_"+id+");");
@@ -203,7 +205,21 @@ public class TestUtils {
 		List<String> ids = new ArrayList<String>();
 		for(String[][] testScenario: testsScenatios){
 			testScenarioCount++;
-			Map<String,ChartRow> chartData = new TreeMap<String,ChartRow>();
+			Map<String,ChartRow> chartData = new TreeMap<String,ChartRow>( new Comparator<String>() {
+				@Override
+				public int compare(String arg0, String arg1) {
+					String[] str0 = arg0.replaceAll("'", "").replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+					String[] str1 = arg1.replaceAll("'", "").replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+					for (int i = 0; i< str0.length; i++) {
+						int a = Integer.parseInt(str0[i]);
+						int b = Integer.parseInt(str1[i]);
+						if (a !=b){
+							return a-b;
+						}
+					}
+					return 0;
+				}
+			});
 			for(String test: tests){
 				int flag;
 				for(RowEntity rowEntry : rowData){
